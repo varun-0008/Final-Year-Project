@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Admin Portal - Librarian Management</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="icon">📖</span>
+        <h2>LibraryAdmin</h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="overview">
+          <span>📊</span>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-tab="catalog">
+          <span>📚</span>
+          <span>Book Catalog</span>
+        </button>
+        <button class="nav-item" data-tab="borrowings">
+          <span>🔄</span>
+          <span>Issue & Returns</span>
+        </button>
+        <button class="nav-item" data-tab="students">
+          <span>🎓</span>
+          <span>Students</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="avatar" id="admin-avatar">L</div>
+          <div class="admin-details">
+            <div class="admin-name" id="admin-name">Chief Librarian</div>
+            <div class="admin-role">Administrator</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="logout-btn" style="width: 100%;">
+          <span>🚪 Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="top-bar">
+        <div class="page-title">
+          <h1 id="page-title-text">Dashboard Overview</h1>
+          <p id="page-subtitle-text">Library metrics, real-time inventory, and active loans</p>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn btn-secondary" id="btn-top-open-library">
+            <span>🌐</span> Open Library
+          </button>
+          <button class="btn btn-secondary" id="btn-quick-issue">
+            <span>➕</span> Issue Book
+          </button>
+          <button class="btn btn-primary" id="btn-add-book">
+            <span>📚</span> Add Book
+          </button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- ==================== TAB 1: OVERVIEW ==================== -->
+        <section id="tab-overview" class="tab-content">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue">📖</div>
+              <div class="stat-info">
+                <h3>Book Titles</h3>
+                <div class="stat-number" id="stat-titles">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">📦</div>
+              <div class="stat-info">
+                <h3>Total Copies</h3>
+                <div class="stat-number" id="stat-total-copies">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon purple">📗</div>
+              <div class="stat-info">
+                <h3>Available Copies</h3>
+                <div class="stat-number" id="stat-avail-copies">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange">⏳</div>
+              <div class="stat-info">
+                <h3>Active Loans</h3>
+                <div class="stat-number" id="stat-active-loans">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red">⚠️</div>
+              <div class="stat-info">
+                <h3>Overdue Books</h3>
+                <div class="stat-number" id="stat-overdue">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon blue">🎓</div>
+              <div class="stat-info">
+                <h3>Students</h3>
+                <div class="stat-number" id="stat-students">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Borrow Transactions</div>
+              <button class="btn btn-sm btn-secondary" onclick="App.switchTab('borrowings')">View All Loans</button>
+            </div>
+            <div class="table-responsive">
+              <table id="overview-loans-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Book Title</th>
+                    <th>Borrow Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-loans-tbody">
+                  <tr><td colspan="6" class="empty-state">Loading transactions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 2: BOOK CATALOG ==================== -->
+        <section id="tab-catalog" class="tab-content" style="display: none;">
+          <!-- Category Quick Filter Chips -->
+          <div class="category-chips-bar" id="catalog-category-chips">
+            <button class="category-chip active" data-genre="">All Categories</button>
+            <button class="category-chip" data-genre="Computer Science">Computer Science</button>
+            <button class="category-chip" data-genre="Software Engineering">Software Engineering</button>
+            <button class="category-chip" data-genre="Programming">Programming</button>
+            <button class="category-chip" data-genre="Algorithms">Algorithms</button>
+            <button class="category-chip" data-genre="Artificial Intelligence">Artificial Intelligence</button>
+            <button class="category-chip" data-genre="Web Development">Web Development</button>
+            <button class="category-chip" data-genre="Databases">Databases</button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="table-controls">
+                <input type="text" id="catalog-search" class="input" placeholder="🔍 Search title, author, ISBN..." style="min-width: 260px;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; user-select: none;">
+                  <input type="checkbox" id="catalog-avail-only"> In Stock Only
+                </label>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="App.exportCatalogCSV()">📥 Export CSV</button>
+                <button class="btn btn-secondary btn-sm" onclick="App.openOpenLibraryModal()">🌐 Search Open Library</button>
+                <button class="btn btn-primary btn-sm" onclick="App.openAddBookModal()">+ New Book</button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table id="catalog-table">
+                <thead>
+                  <tr>
+                    <th>Cover</th>
+                    <th>Title & Author</th>
+                    <th>ISBN</th>
+                    <th>Genre</th>
+                    <th>Availability</th>
+                    <th>Shelf Location</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="catalog-tbody">
+                  <tr><td colspan="7" class="empty-state">Loading catalog...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 3: BORROWINGS & LOANS (ADMIN ONLY) ==================== -->
+        <section id="tab-borrowings" class="tab-content" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="table-controls">
+                <input type="text" id="borrow-search" class="input" placeholder="🔍 Search student or book..." style="min-width: 260px;">
+                <select id="borrow-status-filter" class="select">
+                  <option value="all">All Statuses</option>
+                  <option value="borrowed">Active Loans</option>
+                  <option value="overdue">Overdue Loans</option>
+                  <option value="returned">Returned</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary btn-sm" onclick="App.exportLoansCSV()">📥 Export CSV</button>
+                <button class="btn btn-primary" onclick="App.openIssueModal()">
+                  <span>➕</span> Issue Book to Student
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table id="borrow-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Book Details</th>
+                    <th>Borrow Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Fine / Notes</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="borrow-tbody">
+                  <tr><td colspan="7" class="empty-state">Loading loan records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 4: STUDENTS ==================== -->
+        <section id="tab-students" class="tab-content" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Registered Students</div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="students-search" class="input" placeholder="🔍 Search students..." style="min-width: 220px;">
+                <a class="btn btn-secondary btn-sm" href="/api/auth/students/template" download>
+                  📥 Download Template
+                </a>
+                <button class="btn btn-primary btn-sm" onclick="App.openUploadStudentsModal()">
+                  📤 Upload Excel / CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table id="students-table">
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Phone</th>
+                    <th>Active Loans</th>
+                    <th>Overdue Loans</th>
+                  </tr>
+                </thead>
+                <tbody id="students-tbody">
+                  <tr><td colspan="7" class="empty-state">Loading students...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODAL: ADD BOOK ==================== -->
+  <div class="modal-overlay" id="modal-add-book">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add New Book to Library</h3>
+        <button class="modal-close" onclick="App.closeModals()">&times;</button>
+      </div>
+      <form id="form-add-book">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="add-isbn">ISBN *</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="add-isbn" class="input" required placeholder="e.g. 9780132350884">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-autofill-isbn" style="white-space: nowrap;">
+                ⚡ Auto-Fill
+              </button>
+            </div>
+            <small style="color: var(--gray-600); font-size: 11px;">Enter an ISBN and click Auto-Fill to fetch details from Open Library</small>
+          </div>
+
+          <div class="form-group">
+            <label for="add-title">Book Title *</label>
+            <input type="text" id="add-title" class="input" required placeholder="e.g. Introduction to Algorithms">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="add-author">Author(s) *</label>
+              <input type="text" id="add-author" class="input" required placeholder="e.g. Thomas H. Cormen">
+            </div>
+            <div class="form-group">
+              <label for="add-genre">Genre / Category *</label>
+              <input type="text" id="add-genre" class="input" required placeholder="e.g. Computer Science">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="add-year">Published Year</label>
+              <input type="number" id="add-year" class="input" placeholder="e.g. 2021">
+            </div>
+            <div class="form-group">
+              <label for="add-copies">Total Copies *</label>
+              <input type="number" id="add-copies" class="input" min="1" value="4" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="add-shelf">Shelf Location *</label>
+              <input type="text" id="add-shelf" class="input" required placeholder="e.g. Shelf CS-D1">
+            </div>
+            <div class="form-group">
+              <label for="add-cover-url">Cover Image URL</label>
+              <input type="url" id="add-cover-url" class="input" placeholder="https://covers.openlibrary.org/...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="add-desc">Description</label>
+            <textarea id="add-desc" class="input" rows="3" placeholder="Brief summary of the book..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: EDIT BOOK ==================== -->
+  <div class="modal-overlay" id="modal-edit-book">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Book Details</h3>
+        <button class="modal-close" onclick="App.closeModals()">&times;</button>
+      </div>
+      <form id="form-edit-book">
+        <input type="hidden" id="edit-id">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit-title">Book Title *</label>
+            <input type="text" id="edit-title" class="input" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-author">Author *</label>
+              <input type="text" id="edit-author" class="input" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-isbn">ISBN *</label>
+              <input type="text" id="edit-isbn" class="input" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-genre">Genre *</label>
+              <input type="text" id="edit-genre" class="input" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-year">Year</label>
+              <input type="number" id="edit-year" class="input">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-copies">Total Copies *</label>
+              <input type="number" id="edit-copies" class="input" min="1" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-shelf">Shelf Location *</label>
+              <input type="text" id="edit-shelf" class="input" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-cover-url">Cover Image URL</label>
+            <input type="url" id="edit-cover-url" class="input">
+          </div>
+          <div class="form-group">
+            <label for="edit-desc">Description</label>
+            <textarea id="edit-desc" class="input" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: OPEN LIBRARY SEARCH & IMPORT ==================== -->
+  <div class="modal-overlay" id="modal-open-library">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3>🌐 Open Library Explorer (Internet Archive)</h3>
+          <p style="font-size: 12px; color: var(--gray-600);">Search millions of real books and import them directly into your library catalog</p>
+        </div>
+        <button class="modal-close" onclick="App.closeModals()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-ol-search" class="ol-search-bar">
+          <input type="text" id="ol-query" class="input" placeholder="Search by title, author, subject, or ISBN (e.g. Python, Artificial Intelligence, Turing)..." style="flex: 1;" required>
+          <button type="submit" id="ol-search-btn" class="btn btn-primary">Search</button>
+        </form>
+
+        <!-- Quick Search Topic Tags -->
+        <div style="display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;">
+          <span style="font-size: 12px; color: var(--gray-600); align-self: center;">Popular topics:</span>
+          <button type="button" class="category-chip" onclick="App.quickSearchOL('Artificial Intelligence')">AI</button>
+          <button type="button" class="category-chip" onclick="App.quickSearchOL('Computer Networks')">Networks</button>
+          <button type="button" class="category-chip" onclick="App.quickSearchOL('Data Structures')">Data Structures</button>
+          <button type="button" class="category-chip" onclick="App.quickSearchOL('Operating Systems')">Operating Systems</button>
+          <button type="button" class="category-chip" onclick="App.quickSearchOL('Python Programming')">Python</button>
+        </div>
+
+        <div id="ol-results-container" class="ol-results-grid">
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">📖</div>
+            <p>Enter a query above to search books live from Open Library.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: UPLOAD STUDENTS VIA EXCEL/CSV ==================== -->
+  <div class="modal-overlay" id="modal-upload-students">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3>📤 Import Students via Excel / CSV</h3>
+          <p style="font-size: 12px; color: var(--gray-600);">Upload an Excel (.xlsx / .xls) or CSV spreadsheet to bulk register students</p>
+        </div>
+        <button class="modal-close" onclick="App.closeModals()">&times;</button>
+      </div>
+      <form id="form-upload-students">
+        <div class="modal-body">
+          <div class="file-dropzone" id="file-dropzone">
+            <div class="file-dropzone-icon">📊</div>
+            <p><strong>Click to choose a file</strong> or drag and drop here</p>
+            <p style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">Supports .xlsx, .xls, and .csv files</p>
+            <input type="file" id="students-file-input" accept=".xlsx, .xls, .csv" style="display: none;" required>
+            <div id="selected-file-name" style="margin-top: 10px; font-weight: 600; color: var(--primary);"></div>
+          </div>
+
+          <div style="margin-top: 18px; font-size: 13px; color: var(--gray-700);">
+            <strong>Supported column headers:</strong>
+            <p style="color: var(--gray-600); font-size: 12px; margin-top: 4px;">
+              <code>Student Name</code> (or <code>Name</code>), <code>Email</code>, <code>Student ID</code>, <code>Department</code>, <code>Phone</code>, <code>Password</code> (default: <code>student123</code>).
+            </p>
+            <a href="/api/auth/students/template" download style="display: inline-block; margin-top: 6px; color: var(--secondary); font-weight: 500;">
+              📥 Download pre-formatted template
+            </a>
+          </div>
+
+          <div id="upload-results" class="upload-summary-box" style="display: none;">
+            <div class="upload-stat-badges">
+              <span class="badge badge-success" id="badge-upload-created">0 Created</span>
+              <span class="badge badge-neutral" id="badge-upload-skipped">0 Skipped</span>
+            </div>
+            <div id="upload-summary-text"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Cancel</button>
+          <button type="submit" id="btn-submit-upload" class="btn btn-primary">Start Import</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ISSUE BOOK (ADMIN ONLY) ==================== -->
+  <div class="modal-overlay" id="modal-issue-book">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Issue Book to Student</h3>
+        <button class="modal-close" onclick="App.closeModals()">&times;</button>
+      </div>
+      <form id="form-issue-book">
+        <div class="modal-body">
+          <div style="background: var(--primary-light); border-left: 4px solid var(--primary); padding: 12px; border-radius: 6px; margin-bottom: 18px; font-size: 13px; color: var(--primary);">
+            🔒 <strong>Staff Circulation Desk:</strong> Only librarians are authorized to issue books.
+          </div>
+          <div class="form-group">
+            <label for="issue-student">Student (ID or Email) *</label>
+            <input type="text" id="issue-student" class="input" required placeholder="e.g. STU-1001 or student email">
+          </div>
+          <div class="form-group">
+            <label for="issue-book">Book (ID or ISBN) *</label>
+            <input type="text" id="issue-book" class="input" required placeholder="e.g. ISBN or Book ID">
+          </div>
+          <div class="form-group">
+            <label for="issue-due-date">Due Date *</label>
+            <input type="date" id="issue-due-date" class="input" required>
+          </div>
+          <div class="form-group">
+            <label for="issue-notes">Notes / Purpose (Optional)</label>
+            <input type="text" id="issue-notes" class="input" placeholder="e.g. Course reference loan">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm & Issue Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Librarian Admin Login - Library Management</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo-badge">📚</div>
+      <h1>Librarian Portal</h1>
+      <p>Library Management & Borrowing System</p>
+    </div>
+
+    <div class="demo-credentials">
+      <strong>Default Admin Credentials:</strong><br>
+      Email: <code>admin@library.com</code><br>
+      Password: <code>admin123</code>
+    </div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="identifier">Email / Staff ID</label>
+        <input 
+          type="text" 
+          id="identifier" 
+          class="input" 
+          placeholder="admin@library.com" 
+          value="admin@library.com"
+          required 
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          class="input" 
+          placeholder="••••••••" 
+          value="admin123"
+          required 
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button type="submit" id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+        Sign In as Librarian
+      </button>
+    </form>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // If already logged in as librarian, redirect to dashboard
+    if (API.isLoggedIn() && API.getUser()?.role === 'librarian') {
+      window.location.href = 'index.html';
+    }
+
+    const form = document.getElementById('login-form');
+    const submitBtn = document.getElementById('login-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Signing in...';
+
+      const identifier = document.getElementById('identifier').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const data = await API.login(identifier, password);
+        if (data.user.role !== 'librarian') {
+          API.logout();
+          API.showToast('Access restricted: Only librarians can access this admin site.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Sign In as Librarian';
+          return;
+        }
+
+        API.showToast('Welcome back, ' + data.user.name + '!', 'success');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 600);
+      } catch (err) {
+        API.showToast(err.message || 'Login failed', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Sign In as Librarian';
+      }
+    });
+  </script>
+</body>
+</html>

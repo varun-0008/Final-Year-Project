@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Campus Library</string>
+    <string name="student_portal">Student Portal</string>
+    <string name="login">Log In</string>
+    <string name="register">Register</string>
+    <string name="sign_in_hint">Sign in with your Student ID or Email</string>
+    <string name="email_or_student_id">Student ID or Email</string>
+    <string name="password">Password</string>
+    <string name="name">Full Name</string>
+    <string name="student_id">Student ID (e.g. STU-1001)</string>
+    <string name="department">Department</string>
+    <string name="phone">Phone Number</string>
+    <string name="catalog">Library Catalog</string>
+    <string name="my_borrowed_books">My Borrowed Books</string>
+    <string name="profile">My Profile</string>
+    <string name="search_books_hint">Search title, author, genre, ISBN...</string>
+    <string name="in_stock_only">Available Now</string>
+    <string name="copies_available">%1$d / %2$d available</string>
+    <string name="out_of_stock">Out of Stock</string>
+    <string name="shelf_location">Shelf: %1$s</string>
+    <string name="due_date">Due: %1$s</string>
+    <string name="borrowed_on">Borrowed: %1$s</string>
+    <string name="no_books_found">No books found matching your query.</string>
+    <string name="no_borrowed_books">You have no active or past borrowed books.</string>
+    <string name="notice_admin_borrow">Notice: Only library staff can issue or record book borrowings. Please visit the library circulation desk to borrow books.</string>
+</resources>

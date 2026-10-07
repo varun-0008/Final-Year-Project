@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Database files & transient data
+backend/database/pgdata/
+*.log
+
+# Environment variables & secrets
+backend/.env
+.env
+
+# Android build outputs & local config
+student-app/.gradle/
+student-app/build/
+student-app/app/build/
+student-app/local.properties
+student-app/.idea/caches/
+student-app/.idea/libraries/
+student-app/.idea/modules.xml
+student-app/.idea/workspace.xml
+
+# OS generated files
+.DS_Store
+Thumbs.db
