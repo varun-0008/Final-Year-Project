@@ -33,9 +33,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve Admin Web Frontend
+// Serve Admin Web Frontend (without auto-hijacking root / to index.html)
 const adminWebPath = path.join(__dirname, '..', 'admin-web');
-app.use(express.static(adminWebPath));
+app.use(express.static(adminWebPath, { index: false }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -65,9 +65,32 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Admin Web redirect fallback for SPA root
+// Root Gateway — Institutional Portal Selector
 app.get('/', (req, res) => {
+  res.sendFile(path.join(adminWebPath, 'portal.html'));
+});
+
+// Friendly aliases
+app.get('/student', (req, res) => {
+  res.sendFile(path.join(adminWebPath, 'student.html'));
+});
+
+app.get('/admin', (req, res) => {
   res.sendFile(path.join(adminWebPath, 'index.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(adminWebPath, 'login.html'));
+});
+
+// Download compiled Android APK
+app.get('/download/apk', (req, res) => {
+  const apkPath = path.join(__dirname, '..', 'student-app-debug.apk');
+  res.download(apkPath, 'SmartCampusLibrary-StudentApp.apk', (err) => {
+    if (err && !res.headersSent) {
+      res.status(404).send('APK binary not found. Build with gradlew assembleDebug.');
+    }
+  });
 });
 
 // Global 404 handler for API routes

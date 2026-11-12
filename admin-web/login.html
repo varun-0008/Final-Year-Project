@@ -50,6 +50,16 @@
       <button type="submit" id="login-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
         Sign In as Librarian
       </button>
+
+      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid #e2e8f0; text-align: center;">
+        <p style="color: #64748b; font-size: 13px; margin: 0 0 10px 0;">Looking for the Student Portal?</p>
+        <a href="student.html" class="btn btn-secondary" style="display: block; width: 100%; text-decoration: none; box-sizing: border-box; text-align: center; font-weight: 600; padding: 10px 0;">
+          🎓 Open Student Portal (Digital ID &amp; Books)
+        </a>
+        <div style="margin-top: 12px;">
+          <a href="/" style="color: #64748b; font-size: 12px; text-decoration: none;">&larr; Back to Central Gateway</a>
+        </div>
+      </div>
     </form>
   </div>
 
@@ -75,6 +85,16 @@
 
       try {
         const data = await API.login(identifier, password);
+        if (data.user.role === 'student') {
+          localStorage.setItem('library_student_token', data.token);
+          localStorage.setItem('library_student_user', JSON.stringify(data.user));
+          API.showToast('Student account detected! Redirecting to Student Portal...', 'success');
+          setTimeout(() => {
+            window.location.href = 'student.html';
+          }, 600);
+          return;
+        }
+
         if (data.user.role !== 'librarian') {
           API.logout();
           API.showToast('Access restricted: Only librarians can access this admin site.', 'error');

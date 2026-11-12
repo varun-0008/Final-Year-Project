@@ -16,7 +16,12 @@ const App = (() => {
     }
     const user = API.getUser();
     if (user?.role !== 'librarian') {
+      if (user?.role === 'student') {
+        window.location.href = 'student.html';
+        return false;
+      }
       API.logout();
+      window.location.href = 'login.html';
       return false;
     }
 
