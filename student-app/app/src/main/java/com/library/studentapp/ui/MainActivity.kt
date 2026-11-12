@@ -65,6 +65,12 @@ class MainActivity : AppCompatActivity() {
         binding.tvProfileEmail.text = user?.email ?: "N/A"
         binding.tvProfileDept.text = user?.department ?: "Not Specified"
         binding.tvProfilePhone.text = user?.phone ?: "Not Specified"
+
+        // Setup Initial Digital Card State
+        binding.tvCardStudentName.text = studentName
+        binding.tvCardRegNo.text = "Reg: ${user?.studentId ?: "24054-CPS-062"}"
+        binding.tvCardDept.text = user?.department ?: "Cyber Physical Systems and Security"
+        loadDigitalCard()
     }
 
     private fun setupRecyclerViews() {
@@ -156,6 +162,35 @@ class MainActivity : AppCompatActivity() {
             loadCatalog()
         } else if (tabIndex == 1) {
             loadBorrowedBooks()
+        } else if (tabIndex == 2) {
+            loadDigitalCard()
+        }
+    }
+
+    private fun loadDigitalCard() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val apiService = RetrofitClient.getService(this@MainActivity)
+                val response = apiService.getDigitalCard()
+                if (response.isSuccessful && response.body() != null) {
+                    val card = response.body()!!.card
+                    withContext(Dispatchers.Main) {
+                        binding.tvCardStudentName.text = card.studentName
+                        binding.tvCardRegNo.text = "Reg: ${card.studentId}"
+                        binding.tvCardDept.text = card.department
+                        binding.tvCardValidity.text = "Valid until: ${card.validity}"
+                        binding.tvCardStatusBadge.text = card.status.uppercase()
+
+                        // Decode QR base64
+                        try {
+                            val pureBase64 = card.qrCodeUrl.substringAfter("base64,")
+                            val decodedBytes = android.util.Base64.decode(pureBase64, android.util.Base64.DEFAULT)
+                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                            binding.ivCardQrCode.setImageBitmap(bitmap)
+                        } catch (_: Exception) {}
+                    }
+                }
+            } catch (_: Exception) {}
         }
     }
 

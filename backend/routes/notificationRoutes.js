@@ -3,6 +3,7 @@ const router = express.Router();
 const notificationController = require('../controllers/notificationController');
 const { authenticateToken } = require('../middleware/auth');
 
+router.get('/', authenticateToken, notificationController.getMyNotifications);
 router.get('/my', authenticateToken, notificationController.getMyNotifications);
 router.patch('/:id/read', authenticateToken, notificationController.markAsRead);
 router.patch('/read-all', authenticateToken, notificationController.markAllAsRead);
