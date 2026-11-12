@@ -52,7 +52,8 @@ const StudentPortal = (() => {
     }
 
     if (!res.ok) {
-      if (res.status === 401 && !endpoint.includes('/login')) {
+      const errMsg = (data && data.error) ? data.error.toLowerCase() : '';
+      if ((res.status === 401 || (res.status === 403 && errMsg.includes('token'))) && !endpoint.includes('/login')) {
         clearStudentSession();
         showAuthOverlay();
       }

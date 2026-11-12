@@ -71,9 +71,13 @@ const API = (() => {
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          if (response.status === 401 && !endpoint.includes('/login')) {
+          const errMsg = (data && data.error) ? data.error.toLowerCase() : '';
+          const isTokenError = response.status === 401 || errMsg.includes('token') || errMsg.includes('expired') || errMsg.includes('access denied');
+          if (isTokenError && !endpoint.includes('/login')) {
             clearSession();
-            window.location.href = 'login.html';
+            if (!window.location.pathname.endsWith('login.html') && !window.location.pathname.endsWith('portal.html')) {
+              window.location.href = 'login.html';
+            }
           }
         }
         throw new Error((data && data.error) ? data.error : `HTTP error ${response.status}`);
