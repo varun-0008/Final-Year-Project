@@ -6,6 +6,11 @@ const StudentPortal = (() => {
   let activeTab = 'catalog';
   let activeGenre = '';
 
+  // Smart API Base URL detector: If served on port 5000 use origin, otherwise point to backend port 5000
+  const API_BASE = (window.location.port === '5000')
+    ? ''
+    : (window.location.protocol === 'file:' ? 'http://localhost:5000' : `${window.location.protocol}//${window.location.hostname}:5000`);
+
   function getStudentToken() {
     return localStorage.getItem('library_student_token');
   }
@@ -23,19 +28,35 @@ const StudentPortal = (() => {
   }
 
   async function studentRequest(endpoint, options = {}) {
-    const url = endpoint;
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
     const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
     const token = getStudentToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const res = await fetch(url, { ...options, headers });
-    const data = await res.json().catch(() => ({}));
+    const contentType = res.headers.get('content-type') || '';
+    let data = null;
+
+    if (contentType.includes('application/json')) {
+      data = await res.json().catch(() => null);
+    } else {
+      const text = await res.text();
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}. Ensure backend is running at http://localhost:5000.`);
+        }
+        throw new Error('Received non-JSON response from server. Check backend terminal.');
+      }
+    }
+
     if (!res.ok) {
       if (res.status === 401 && !endpoint.includes('/login')) {
         clearStudentSession();
         showAuthOverlay();
       }
-      throw new Error(data.error || `HTTP error ${res.status}`);
+      throw new Error((data && data.error) ? data.error : `HTTP error ${res.status}`);
     }
     return data;
   }
@@ -108,13 +129,10 @@ const StudentPortal = (() => {
     const password = document.getElementById('stu-login-password').value;
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const data = await studentRequest('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
 
       setStudentSession(data.token, data.user);
       hideAuthOverlay();
@@ -139,13 +157,10 @@ const StudentPortal = (() => {
     };
 
     try {
-      const res = await fetch('/api/auth/register', {
+      const data = await studentRequest('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
 
       setStudentSession(data.token, data.user);
       hideAuthOverlay();

@@ -1,7 +1,10 @@
 // API helper module for Librarian Admin Site (Vanilla JavaScript)
 
 const API = (() => {
-  const BASE_URL = window.location.origin;
+  // If served through the backend server itself on port 5000, use origin; otherwise route to backend
+  const BASE_URL = (window.location.port === '5000')
+    ? window.location.origin
+    : (window.location.protocol === 'file:' ? 'http://localhost:5000' : `${window.location.protocol}//${window.location.hostname}:5000`);
 
   function getToken() {
     return localStorage.getItem('library_admin_token');
@@ -49,7 +52,22 @@ const API = (() => {
 
     try {
       const response = await fetch(url, { ...options, headers });
-      const data = await response.json().catch(() => ({}));
+      const contentType = response.headers.get('content-type') || '';
+      let data = null;
+
+      if (contentType.includes('application/json')) {
+        data = await response.json().catch(() => null);
+      } else {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch (_) {
+          if (!response.ok) {
+            throw new Error(`Server returned HTTP ${response.status} (${response.statusText || 'Error'}). Ensure backend is running at ${BASE_URL}.`);
+          }
+          throw new Error(`Expected JSON but received non-JSON response from ${url}. Check server terminal.`);
+        }
+      }
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
@@ -58,7 +76,7 @@ const API = (() => {
             window.location.href = 'login.html';
           }
         }
-        throw new Error(data.error || `HTTP error ${response.status}`);
+        throw new Error((data && data.error) ? data.error : `HTTP error ${response.status}`);
       }
 
       return data;
