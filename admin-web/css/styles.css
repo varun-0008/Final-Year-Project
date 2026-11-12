@@ -794,10 +794,180 @@ tr:hover td {
   font-size: 13px;
 }
 
-.upload-stat-badges {
+/* ==================== DIGITAL LIBRARY MEMBERSHIP CARD (MODULE 8) ==================== */
+.id-card-wrap {
+  perspective: 1000px;
   display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
+  justify-content: center;
+}
+
+.library-id-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  border: 1px solid #e2e8f0;
+  font-family: inherit;
+}
+
+.id-card-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+  color: #ffffff;
+  padding: 16px 18px;
+  text-align: center;
+  position: relative;
+  border-bottom: 3px solid #f59e0b;
+}
+
+.id-card-motto {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #fef08a;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.id-card-inst {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.id-card-sub {
+  font-size: 10px;
+  color: #93c5fd;
+  margin-top: 2px;
+}
+
+.id-card-body {
+  padding: 18px 20px;
+  display: flex;
+  gap: 16px;
+}
+
+.id-card-photo-box {
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.id-card-photo {
+  width: 86px;
+  height: 106px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #1e3a8a;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.id-card-validity {
+  font-size: 9px;
+  font-weight: 600;
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 3px 6px;
+  border-radius: 4px;
+  text-align: center;
+  width: 100%;
+}
+
+.id-card-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.id-card-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.id-card-reg {
+  font-size: 12px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+
+.id-card-meta {
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.id-card-meta strong {
+  color: #1e293b;
+}
+
+.id-card-footer {
+  background: #f8fafc;
+  border-top: 1px dashed #cbd5e1;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.id-card-qr-img {
+  width: 88px;
+  height: 88px;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.id-card-qr-text {
+  font-size: 10px;
+  color: #64748b;
+  max-width: 200px;
+  line-height: 1.4;
+}
+
+.id-card-qr-text strong {
+  color: #0f172a;
+  display: block;
+  font-size: 11px;
+}
+
+/* Exact Shelf Locator Pill */
+.shelf-coordinate-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Desk Console Grid */
+.desk-console-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .desk-console-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Responsive */

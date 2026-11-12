@@ -28,6 +28,18 @@
           <span>🔄</span>
           <span>Issue & Returns</span>
         </button>
+        <button class="nav-item" data-tab="reservations">
+          <span>📋</span>
+          <span>Reservations</span>
+        </button>
+        <button class="nav-item" data-tab="waitinglist">
+          <span>⏳</span>
+          <span>Smart Waiting List</span>
+        </button>
+        <button class="nav-item" data-tab="announcements">
+          <span>📢</span>
+          <span>Announcements</span>
+        </button>
         <button class="nav-item" data-tab="students">
           <span>🎓</span>
           <span>Students</span>
@@ -56,6 +68,9 @@
           <p id="page-subtitle-text">Library metrics, real-time inventory, and active loans</p>
         </div>
         <div class="top-bar-actions">
+          <a href="student.html" target="_blank" class="btn btn-secondary" style="text-decoration: none; color: inherit;">
+            <span>📱</span> Student Portal
+          </a>
           <button class="btn btn-secondary" id="btn-top-open-library">
             <span>🌐</span> Open Library
           </button>
@@ -193,6 +208,36 @@
 
         <!-- ==================== TAB 3: BORROWINGS & LOANS (ADMIN ONLY) ==================== -->
         <section id="tab-borrowings" class="tab-content" style="display: none;">
+          <!-- Desk Scan & Go Bar (Module 8) -->
+          <div class="card" style="border: 2px solid var(--secondary); background: linear-gradient(to right, #eff6ff, #f8fafc); margin-bottom: 20px;">
+            <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 26px;">⚡</span>
+                  <div>
+                    <h3 style="margin: 0; font-size: 16px; color: var(--primary);">Desk Scan & Go — Digital QR Card Station</h3>
+                    <p style="margin: 0; font-size: 12px; color: var(--gray-600);">Scan student dynamic QR identity card or enter College Registration Number (e.g. 24054-CPS-062)</p>
+                  </div>
+                </div>
+                <span class="badge" style="background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold;">Scanner Active</span>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="position: relative; flex: 1; min-width: 280px;">
+                  <input type="text" id="desk-scan-input" class="input" placeholder="📷 Scan QR code or enter Reg No (e.g. 24054-CPS-062, LIB-24054-062)..." style="width: 100%; font-family: monospace; font-size: 14px; border-color: var(--secondary);">
+                </div>
+                <button class="btn btn-primary" id="btn-desk-scan" onclick="App.handleDeskScan()">
+                  <span>⚡</span> Lookup Account
+                </button>
+                <button class="btn btn-secondary" onclick="App.clearDeskScan()">Clear</button>
+              </div>
+
+              <!-- Interactive Student Desk Console Output -->
+              <div id="desk-student-panel" style="display: none; margin-top: 10px; padding-top: 15px; border-top: 1px solid var(--gray-300);">
+                <!-- Populated dynamically by App.handleDeskScan() -->
+              </div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-header">
               <div class="table-controls">
@@ -233,11 +278,101 @@
           </div>
         </section>
 
-        <!-- ==================== TAB 4: STUDENTS ==================== -->
+        <!-- ==================== TAB 4: RESERVATIONS & TIMESLOT HOLDS ==================== -->
+        <section id="tab-reservations" class="tab-content" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Online Book Reservations & Timeslot Scheduling</div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="res-status-filter" class="select" onchange="App.loadReservations()">
+                  <option value="all">All Reservations</option>
+                  <option value="pending">Pending Approval</option>
+                  <option value="ready_for_pickup">Ready for Pickup</option>
+                  <option value="approved">Approved</option>
+                  <option value="fulfilled">Fulfilled</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <button class="btn btn-secondary btn-sm" onclick="App.loadReservations()">🔄 Refresh</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table id="reservations-table">
+                <thead>
+                  <tr>
+                    <th>Reservation ID</th>
+                    <th>Student Details</th>
+                    <th>Book Details & Shelf</th>
+                    <th>Preferred Date & Slot</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reservations-tbody">
+                  <tr><td colspan="6" class="empty-state">Loading reservations...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 5: SMART WAITING LIST ==================== -->
+        <section id="tab-waitinglist" class="tab-content" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Smart Waiting List (FIFO Automated Promotion Queue)</div>
+              <button class="btn btn-secondary btn-sm" onclick="App.loadWaitingLists()">🔄 Refresh Queues</button>
+            </div>
+            <div class="table-responsive">
+              <table id="waitinglist-table">
+                <thead>
+                  <tr>
+                    <th>Queue Pos</th>
+                    <th>Book Title & ISBN</th>
+                    <th>Student Name & Reg No</th>
+                    <th>Department</th>
+                    <th>Queue Status</th>
+                    <th>Joined Date</th>
+                  </tr>
+                </thead>
+                <tbody id="waitinglist-tbody">
+                  <tr><td colspan="6" class="empty-state">Loading waiting lists...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 6: ANNOUNCEMENTS ==================== -->
+        <section id="tab-announcements" class="tab-content" style="display: none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Library Announcements & Institutional Notices</div>
+              <button class="btn btn-primary btn-sm" onclick="App.openAddAnnouncementModal()">+ New Notice</button>
+            </div>
+            <div class="table-responsive">
+              <table id="announcements-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Content</th>
+                    <th>Posted Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="announcements-tbody">
+                  <tr><td colspan="5" class="empty-state">Loading announcements...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 7: STUDENTS ==================== -->
         <section id="tab-students" class="tab-content" style="display: none;">
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Registered Students</div>
+              <div class="card-title">Registered Students & Digital Identity Cards</div>
               <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="text" id="students-search" class="input" placeholder="🔍 Search students..." style="min-width: 220px;">
                 <a class="btn btn-secondary btn-sm" href="/api/auth/students/template" download>
@@ -254,12 +389,12 @@
                 <thead>
                   <tr>
                     <th>Student Name</th>
-                    <th>Student ID</th>
+                    <th>Registration No</th>
                     <th>Email</th>
-                    <th>Department</th>
-                    <th>Phone</th>
+                    <th>Department & Course</th>
                     <th>Active Loans</th>
-                    <th>Overdue Loans</th>
+                    <th>Overdue</th>
+                    <th>Digital Card</th>
                   </tr>
                 </thead>
                 <tbody id="students-tbody">
@@ -317,15 +452,39 @@
               <input type="number" id="add-copies" class="input" min="1" value="4" required>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="add-shelf">Shelf Location *</label>
-              <input type="text" id="add-shelf" class="input" required placeholder="e.g. Shelf CS-D1">
+          <!-- Exact Physical Shelf Locator Coordinate Inputs -->
+          <div style="background: var(--gray-100); padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--gray-300);">
+            <div style="font-weight: 600; font-size: 13px; color: var(--primary); margin-bottom: 8px;">
+              📍 Book Finder – Exact Physical Shelf Coordinates
             </div>
-            <div class="form-group">
-              <label for="add-cover-url">Cover Image URL</label>
-              <input type="url" id="add-cover-url" class="input" placeholder="https://covers.openlibrary.org/...">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="add-block" style="font-size: 11px;">Library Block *</label>
+                <input type="text" id="add-block" class="input" value="A" placeholder="e.g. A">
+              </div>
+              <div class="form-group">
+                <label for="add-floor" style="font-size: 11px;">Floor Level *</label>
+                <input type="number" id="add-floor" class="input" value="2" placeholder="e.g. 2">
+              </div>
+              <div class="form-group">
+                <label for="add-section" style="font-size: 11px;">Section *</label>
+                <input type="text" id="add-section" class="input" value="Computer Science" placeholder="e.g. Computer Science">
+              </div>
             </div>
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="add-rack" style="font-size: 11px;">Rack Identifier *</label>
+                <input type="text" id="add-rack" class="input" value="Rack 08" placeholder="e.g. Rack 08">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="add-shelf-tier" style="font-size: 11px;">Shelf Tier *</label>
+                <input type="text" id="add-shelf-tier" class="input" value="Shelf 03" placeholder="e.g. Shelf 03">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="add-cover-url">Cover Image URL</label>
+            <input type="url" id="add-cover-url" class="input" placeholder="https://covers.openlibrary.org/...">
           </div>
           <div class="form-group">
             <label for="add-desc">Description</label>
@@ -518,6 +677,68 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Cancel</button>
           <button type="submit" class="btn btn-primary">Confirm & Issue Book</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: DIGITAL LIBRARY MEMBERSHIP CARD (MODULE 8) ==================== -->
+  <div class="modal-overlay" id="modal-digital-card">
+    <div class="modal" style="max-width: 480px; padding: 0; overflow: hidden; border-radius: 16px;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #0f172a); color: white; padding: 16px 20px;">
+        <div>
+          <h3 style="color: white; font-size: 16px; margin: 0;">Digital Library Identity Card</h3>
+          <p style="margin: 0; font-size: 11px; color: #93c5fd;">Government Institute of Electronics, Secunderabad</p>
+        </div>
+        <button class="modal-close" style="color: white;" onclick="App.closeModals()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px; background: #f8fafc;" id="digital-card-modal-content">
+        <!-- Rendered dynamically by App.viewStudentCard() -->
+      </div>
+      <div class="modal-footer" style="padding: 12px 20px; background: white;">
+        <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Print Card</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD ANNOUNCEMENT ==================== -->
+  <div class="modal-overlay" id="modal-add-announcement">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Post Institutional Library Announcement</h3>
+        <button class="modal-close" onclick="App.closeModals()">&times;</button>
+      </div>
+      <form id="form-add-announcement" onsubmit="App.handleCreateAnnouncement(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="ann-title">Announcement Title *</label>
+            <input type="text" id="ann-title" class="input" required placeholder="e.g. Special Holiday Hours / New Cyber Physical Systems Arrivals">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ann-category">Category *</label>
+              <select id="ann-category" class="select">
+                <option value="general">📢 General Notice</option>
+                <option value="holiday">🏖️ Library Holiday Announcement</option>
+                <option value="new_arrival">📚 Book Arrival Notification</option>
+                <option value="exam_hours">⏳ Extended Exam Hours</option>
+                <option value="maintenance">🛠️ System Maintenance</option>
+              </select>
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 24px;">
+              <input type="checkbox" id="ann-broadcast" checked>
+              <label for="ann-broadcast" style="margin: 0; cursor: pointer;">Broadcast in-app alert to all students</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ann-content">Announcement Content *</label>
+            <textarea id="ann-content" class="input" rows="4" required placeholder="Detailed information for students and faculty..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="App.closeModals()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish Announcement</button>
         </div>
       </form>
     </div>

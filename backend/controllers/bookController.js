@@ -7,8 +7,13 @@ exports.getAllBooks = async (req, res) => {
     const { search, genre, availableOnly } = req.query;
 
     let queryText = `
-      SELECT id, isbn, title, author, genre, published_year, total_copies, available_copies, shelf_location, description, cover_url, created_at
-      FROM books
+      SELECT 
+        b.id, b.isbn, b.title, b.author, b.genre, b.published_year, 
+        b.total_copies, b.available_copies, b.shelf_location,
+        b.block, b.floor, b.section, b.rack, b.shelf,
+        b.description, b.cover_url, b.created_at,
+        (SELECT COUNT(*) FROM waiting_list w WHERE w.book_id = b.id AND w.status = 'waiting') AS waiting_count
+      FROM books b
       WHERE 1=1
     `;
     const queryParams = [];
@@ -17,23 +22,26 @@ exports.getAllBooks = async (req, res) => {
       queryParams.push(`%${search.trim().toLowerCase()}%`);
       const pIndex = queryParams.length;
       queryText += ` AND (
-        LOWER(title) LIKE $${pIndex} OR 
-        LOWER(author) LIKE $${pIndex} OR 
-        LOWER(isbn) LIKE $${pIndex} OR 
-        LOWER(genre) LIKE $${pIndex}
+        LOWER(b.title) LIKE $${pIndex} OR 
+        LOWER(b.author) LIKE $${pIndex} OR 
+        LOWER(b.isbn) LIKE $${pIndex} OR 
+        LOWER(b.genre) LIKE $${pIndex} OR
+        LOWER(b.shelf_location) LIKE $${pIndex} OR
+        LOWER(b.section) LIKE $${pIndex} OR
+        LOWER(b.rack) LIKE $${pIndex}
       )`;
     }
 
     if (genre && genre.trim() !== '' && genre.toLowerCase() !== 'all') {
       queryParams.push(genre.trim());
-      queryText += ` AND LOWER(genre) = LOWER($${queryParams.length})`;
+      queryText += ` AND LOWER(b.genre) = LOWER($${queryParams.length})`;
     }
 
     if (availableOnly === 'true' || availableOnly === '1') {
-      queryText += ` AND available_copies > 0`;
+      queryText += ` AND b.available_copies > 0`;
     }
 
-    queryText += ` ORDER BY title ASC`;
+    queryText += ` ORDER BY b.title ASC`;
 
     const booksRes = await db.query(queryText, queryParams);
     return res.json({ books: booksRes.rows });
@@ -62,8 +70,14 @@ exports.getBookById = async (req, res) => {
   try {
     const { id } = req.params;
     const bookRes = await db.query(
-      `SELECT id, isbn, title, author, genre, published_year, total_copies, available_copies, shelf_location, description, cover_url, created_at
-       FROM books WHERE id = $1`,
+      `SELECT 
+         b.id, b.isbn, b.title, b.author, b.genre, b.published_year, 
+         b.total_copies, b.available_copies, b.shelf_location,
+         b.block, b.floor, b.section, b.rack, b.shelf,
+         b.description, b.cover_url, b.created_at,
+         (SELECT COUNT(*) FROM waiting_list w WHERE w.book_id = b.id AND w.status = 'waiting') AS waiting_count
+       FROM books b 
+       WHERE b.id = $1`,
       [id]
     );
 
@@ -81,11 +95,15 @@ exports.getBookById = async (req, res) => {
 // Add new book - Librarian only
 exports.createBook = async (req, res) => {
   try {
-    const { isbn, title, author, genre, published_year, total_copies, shelf_location, description, cover_url } = req.body;
+    const { 
+      isbn, title, author, genre, published_year, total_copies, 
+      shelf_location, block, floor, section, rack, shelf,
+      description, cover_url 
+    } = req.body;
 
-    if (!isbn || !title || !author || !genre || !shelf_location) {
+    if (!isbn || !title || !author || !genre) {
       return res.status(400).json({
-        error: 'ISBN, Title, Author, Genre, and Shelf Location are required.',
+        error: 'ISBN, Title, Author, and Genre are required.',
       });
     }
 
@@ -100,9 +118,19 @@ exports.createBook = async (req, res) => {
       return res.status(409).json({ error: 'A book with this ISBN already exists.' });
     }
 
+    const bBlock = block || 'A';
+    const bFloor = floor !== undefined ? parseInt(floor, 10) : 2;
+    const bSection = section || genre || 'Computer Science';
+    const bRack = rack || 'Rack 08';
+    const bShelf = shelf || 'Shelf 03';
+    const bLocation = shelf_location ? shelf_location.trim() : `Block ${bBlock}, Floor ${bFloor}, ${bSection}, ${bRack}, ${bShelf}`;
+
     const insertRes = await db.query(
-      `INSERT INTO books (isbn, title, author, genre, published_year, total_copies, available_copies, shelf_location, description, cover_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $6, $7, $8, $9)
+      `INSERT INTO books (
+         isbn, title, author, genre, published_year, total_copies, available_copies, 
+         shelf_location, block, floor, section, rack, shelf, description, cover_url
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING *`,
       [
         isbn.trim(),
@@ -111,14 +139,19 @@ exports.createBook = async (req, res) => {
         genre.trim(),
         published_year ? parseInt(published_year, 10) : null,
         copies,
-        shelf_location.trim(),
+        bLocation,
+        bBlock,
+        bFloor,
+        bSection,
+        bRack,
+        bShelf,
         description ? description.trim() : null,
         cover_url ? cover_url.trim() : null,
       ]
     );
 
     return res.status(201).json({
-      message: 'Book added successfully',
+      message: 'Book added successfully with exact shelf coordinates',
       book: insertRes.rows[0],
     });
   } catch (err) {
@@ -131,7 +164,11 @@ exports.createBook = async (req, res) => {
 exports.updateBook = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isbn, title, author, genre, published_year, total_copies, shelf_location, description, cover_url } = req.body;
+    const { 
+      isbn, title, author, genre, published_year, total_copies, 
+      shelf_location, block, floor, section, rack, shelf,
+      description, cover_url 
+    } = req.body;
 
     const currentBookRes = await db.query(`SELECT * FROM books WHERE id = $1`, [id]);
     if (currentBookRes.rowCount === 0) {
@@ -149,6 +186,12 @@ exports.updateBook = async (req, res) => {
     }
 
     const newAvailable = newTotal - borrowedCopies;
+    const bBlock = block !== undefined ? block : currentBook.block;
+    const bFloor = floor !== undefined ? parseInt(floor, 10) : currentBook.floor;
+    const bSection = section !== undefined ? section : currentBook.section;
+    const bRack = rack !== undefined ? rack : currentBook.rack;
+    const bShelf = shelf !== undefined ? shelf : currentBook.shelf;
+    const bLocation = shelf_location ? shelf_location.trim() : `Block ${bBlock}, Floor ${bFloor}, ${bSection}, ${bRack}, ${bShelf}`;
 
     const updateRes = await db.query(
       `UPDATE books
@@ -160,9 +203,14 @@ exports.updateBook = async (req, res) => {
            total_copies = $6,
            available_copies = $7,
            shelf_location = $8,
-           description = $9,
-           cover_url = $10
-       WHERE id = $11
+           block = $9,
+           floor = $10,
+           section = $11,
+           rack = $12,
+           shelf = $13,
+           description = $14,
+           cover_url = $15
+       WHERE id = $16
        RETURNING *`,
       [
         isbn ? isbn.trim() : currentBook.isbn,
@@ -172,7 +220,12 @@ exports.updateBook = async (req, res) => {
         published_year !== undefined ? parseInt(published_year, 10) : currentBook.published_year,
         newTotal,
         newAvailable,
-        shelf_location ? shelf_location.trim() : currentBook.shelf_location,
+        bLocation,
+        bBlock,
+        bFloor,
+        bSection,
+        bRack,
+        bShelf,
         description !== undefined ? description : currentBook.description,
         cover_url !== undefined ? cover_url : currentBook.cover_url,
         id,

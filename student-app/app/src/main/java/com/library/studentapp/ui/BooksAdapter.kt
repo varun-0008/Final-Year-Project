@@ -49,7 +49,12 @@ class BooksAdapter(
             }
             binding.tvBookAuthor.text = authorText
             binding.tvBookGenre.text = book.genre
-            binding.tvShelfLocation.text = "📍 ${book.shelfLocation}"
+            val shelfText = if (!book.rack.isNullOrBlank() && !book.shelf.isNullOrBlank()) {
+                "📍 Block ${book.block ?: "A"}, Fl ${book.floor ?: 2} • ${book.rack} • ${book.shelf}"
+            } else {
+                "📍 ${book.shelfLocation}"
+            }
+            binding.tvShelfLocation.text = shelfText
             binding.tvIsbn.text = "ISBN: ${book.isbn}"
 
             if (book.availableCopies > 0) {
@@ -59,8 +64,9 @@ class BooksAdapter(
                     background = ContextCompat.getDrawable(context, R.drawable.bg_badge_available)
                 }
             } else {
+                val waitMsg = if ((book.waitingCount ?: 0) > 0) " (${book.waitingCount} waiting)" else ""
                 binding.tvAvailabilityBadge.apply {
-                    text = "Out of Stock (0 / ${book.totalCopies})"
+                    text = "Out of Stock$waitMsg"
                     setTextColor(ContextCompat.getColor(context, R.color.danger))
                     background = ContextCompat.getDrawable(context, R.drawable.bg_badge_out_of_stock)
                 }

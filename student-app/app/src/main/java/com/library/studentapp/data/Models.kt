@@ -9,6 +9,12 @@ data class User(
     @SerializedName("student_id") val studentId: String?,
     val role: String,
     val department: String?,
+    val course: String? = null,
+    val semester: String? = null,
+    @SerializedName("membership_id") val membershipId: String? = null,
+    @SerializedName("membership_valid_until") val membershipValidUntil: String? = null,
+    @SerializedName("borrow_limit") val borrowLimit: Int? = 3,
+    @SerializedName("photo_url") val photoUrl: String? = null,
     val phone: String?
 )
 
@@ -22,6 +28,12 @@ data class Book(
     @SerializedName("total_copies") val totalCopies: Int,
     @SerializedName("available_copies") val availableCopies: Int,
     @SerializedName("shelf_location") val shelfLocation: String,
+    val block: String? = "A",
+    val floor: Int? = 2,
+    val section: String? = "Computer Science",
+    val rack: String? = "Rack 08",
+    val shelf: String? = "Shelf 03",
+    @SerializedName("waiting_count") val waitingCount: Int? = 0,
     val description: String?,
     @SerializedName("cover_url") val coverUrl: String? = null
 )
@@ -34,6 +46,10 @@ data class BorrowRecord(
     val isbn: String,
     val genre: String,
     @SerializedName("shelf_location") val shelfLocation: String,
+    val block: String? = "A",
+    val floor: Int? = 2,
+    val rack: String? = "Rack 08",
+    val shelf: String? = "Shelf 03",
     @SerializedName("borrow_date") val borrowDate: String,
     @SerializedName("due_date") val dueDate: String,
     @SerializedName("return_date") val returnDate: String?,
@@ -43,6 +59,63 @@ data class BorrowRecord(
     @SerializedName("days_overdue") val daysOverdue: Int,
     @SerializedName("days_remaining") val daysRemaining: Int,
     val notes: String?
+)
+
+data class DigitalCard(
+    val institution: String,
+    val board: String,
+    val motto: String,
+    @SerializedName("student_name") val studentName: String,
+    @SerializedName("student_id") val studentId: String,
+    val department: String,
+    val course: String,
+    val semester: String,
+    @SerializedName("membership_id") val membershipId: String,
+    val validity: String,
+    val status: String,
+    @SerializedName("borrow_limit") val borrowLimit: Int,
+    @SerializedName("active_loans") val activeLoans: Int,
+    @SerializedName("remaining_slots") val remainingSlots: Int,
+    @SerializedName("photo_url") val photoUrl: String?,
+    @SerializedName("qr_data") val qrData: String,
+    @SerializedName("qr_code_url") val qrCodeUrl: String
+)
+
+data class DigitalCardResponse(
+    val card: DigitalCard
+)
+
+data class Reservation(
+    val id: Int,
+    @SerializedName("reservation_code") val reservationCode: String,
+    @SerializedName("book_id") val bookId: Int,
+    @SerializedName("book_title") val bookTitle: String,
+    @SerializedName("book_author") val bookAuthor: String?,
+    @SerializedName("preferred_date") val preferredDate: String,
+    val timeslot: String,
+    val status: String,
+    val block: String? = "A",
+    val floor: Int? = 2,
+    val rack: String? = "Rack 08",
+    val shelf: String? = "Shelf 03"
+)
+
+data class ReservationsResponse(
+    val reservations: List<Reservation>
+)
+
+data class NotificationItem(
+    val id: Int,
+    val title: String,
+    val message: String,
+    val type: String,
+    @SerializedName("is_read") val isRead: Boolean,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class NotificationsResponse(
+    val notifications: List<NotificationItem>,
+    @SerializedName("unread_count") val unreadCount: Int
 )
 
 data class LoginRequest(
@@ -62,6 +135,8 @@ data class RegisterRequest(
     @SerializedName("student_id") val studentId: String,
     val password: String,
     val department: String?,
+    val course: String? = null,
+    val semester: String? = null,
     val phone: String?
 )
 

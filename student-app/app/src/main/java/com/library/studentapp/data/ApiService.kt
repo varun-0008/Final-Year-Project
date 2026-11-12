@@ -3,6 +3,7 @@ package com.library.studentapp.data
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -19,6 +20,9 @@ interface ApiService {
         @Body request: RegisterRequest
     ): Response<RegisterResponse>
 
+    @GET("api/auth/student-card")
+    suspend fun getDigitalCard(): Response<DigitalCardResponse>
+
     @GET("api/books")
     suspend fun getBooks(
         @Query("search") search: String? = null,
@@ -31,8 +35,25 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<Map<String, Book>>
 
-    // Students can only VIEW their own borrowed books.
-    // Adding/issuing borrowed records is strictly available only to the admin/librarian.
     @GET("api/borrow/my-books")
     suspend fun getMyBorrowedBooks(): Response<BorrowedResponse>
+
+    @GET("api/reservations/my")
+    suspend fun getMyReservations(): Response<ReservationsResponse>
+
+    @POST("api/reservations")
+    suspend fun createReservation(
+        @Body payload: Map<String, Any>
+    ): Response<Map<String, Any>>
+
+    @POST("api/waiting-list/join")
+    suspend fun joinWaitingList(
+        @Body payload: Map<String, Any>
+    ): Response<Map<String, Any>>
+
+    @GET("api/notifications/my")
+    suspend fun getMyNotifications(): Response<NotificationsResponse>
+
+    @PATCH("api/notifications/read-all")
+    suspend fun markAllNotificationsRead(): Response<Map<String, String>>
 }

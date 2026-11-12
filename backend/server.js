@@ -6,6 +6,10 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const borrowRoutes = require('./routes/borrowRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
+const waitingListRoutes = require('./routes/waitingListRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const db = require('./config/db');
 
 const app = express();
@@ -37,6 +41,10 @@ app.use(express.static(adminWebPath));
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/borrow', borrowRoutes);
+app.use('/api/reservations', reservationRoutes);
+app.use('/api/waiting-list', waitingListRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

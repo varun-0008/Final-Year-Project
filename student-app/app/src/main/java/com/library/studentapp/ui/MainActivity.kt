@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerViews() {
         // Books Catalog Adapter
         booksAdapter = BooksAdapter { book ->
+            val exactCoords = "Block ${book.block ?: "A"}, Floor ${book.floor ?: 2}, Section: ${book.section ?: book.genre}, ${book.rack ?: "Rack 08"}, ${book.shelf ?: "Shelf 03"}"
             val intent = Intent(this, BookDetailActivity::class.java).apply {
                 putExtra(BookDetailActivity.EXTRA_TITLE, book.title)
                 putExtra(BookDetailActivity.EXTRA_AUTHOR, book.author)
@@ -78,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 putExtra(BookDetailActivity.EXTRA_YEAR, book.publishedYear ?: 0)
                 putExtra(BookDetailActivity.EXTRA_TOTAL, book.totalCopies)
                 putExtra(BookDetailActivity.EXTRA_AVAIL, book.availableCopies)
-                putExtra(BookDetailActivity.EXTRA_SHELF, book.shelfLocation)
+                putExtra(BookDetailActivity.EXTRA_SHELF, exactCoords)
                 putExtra(BookDetailActivity.EXTRA_DESC, book.description)
             }
             startActivity(intent)

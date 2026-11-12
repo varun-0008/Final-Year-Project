@@ -49,15 +49,27 @@ const App = (() => {
       loadOverview();
     } else if (tabName === 'catalog') {
       titleEl.innerText = 'Book Catalog Management';
-      subtitleEl.innerText = 'Manage books, stock quantities, and shelf locations';
+      subtitleEl.innerText = 'Manage books, stock quantities, and exact shelf coordinates';
       loadBooks();
     } else if (tabName === 'borrowings') {
-      titleEl.innerText = 'Issue & Return Management';
-      subtitleEl.innerText = 'Issue books to students, track due dates, and process returns';
+      titleEl.innerText = 'Circulation Desk & Issue/Returns';
+      subtitleEl.innerText = 'Desk scan-and-go digital cards, issue books, and process returns';
       loadBorrowings();
+    } else if (tabName === 'reservations') {
+      titleEl.innerText = 'Online Book Reservations & Holds';
+      subtitleEl.innerText = 'Review, approve timeslots, and issue pre-reserved volumes';
+      loadReservations();
+    } else if (tabName === 'waitinglist') {
+      titleEl.innerText = 'Smart Waiting List';
+      subtitleEl.innerText = 'Automated FIFO queues and return notification alerts';
+      loadWaitingLists();
+    } else if (tabName === 'announcements') {
+      titleEl.innerText = 'Library Announcements & Notices';
+      subtitleEl.innerText = 'Broadcast holidays, exam schedules, and new arrival alerts';
+      loadAnnouncements();
     } else if (tabName === 'students') {
-      titleEl.innerText = 'Registered Students';
-      subtitleEl.innerText = 'View enrolled students, download template, and import via Excel';
+      titleEl.innerText = 'Registered Students & Digital Identity Cards';
+      subtitleEl.innerText = 'View enrolled students, digital membership cards, and Excel roster import';
       loadStudents();
     }
   }
@@ -159,11 +171,21 @@ const App = (() => {
       const isAvailable = b.available_copies > 0;
       const stockBadge = isAvailable
         ? `<span class="badge badge-success">${b.available_copies} / ${b.total_copies} In Stock</span>`
-        : `<span class="badge badge-danger">Out of Stock (0 / ${b.total_copies})</span>`;
+        : `<span class="badge badge-danger">Out of Stock (${b.waiting_count || 0} waiting)</span>`;
 
       const coverImg = b.cover_url
-        ? `<img src="${escapeHtml(b.cover_url)}" alt="cover" style="width: 36px; height: 50px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">`
-        : `<div style="width: 36px; height: 50px; background: var(--gray-200); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px;">📖</div>`;
+        ? `<img src="${escapeHtml(b.cover_url)}" alt="cover" style="width: 38px; height: 52px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">`
+        : `<div style="width: 38px; height: 52px; background: var(--gray-200); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px;">📖</div>`;
+
+      const shelfCoord = `
+        <div>
+          <div style="font-weight: 600; color: var(--gray-900);">${escapeHtml(b.shelf_location || 'Main Stacks')}</div>
+          <div class="shelf-coordinate-pill" style="margin-top: 4px;">
+            <span>📍</span>
+            <span>Block ${escapeHtml(b.block || 'A')} • Fl ${b.floor || 2} • ${escapeHtml(b.rack || 'Rack 08')} • ${escapeHtml(b.shelf || 'Shelf 03')}</span>
+          </div>
+        </div>
+      `;
 
       return `
         <tr>
@@ -175,7 +197,7 @@ const App = (() => {
           <td><code>${escapeHtml(b.isbn)}</code></td>
           <td><span class="badge badge-neutral">${escapeHtml(b.genre)}</span></td>
           <td>${stockBadge}</td>
-          <td><strong>${escapeHtml(b.shelf_location)}</strong></td>
+          <td>${shelfCoord}</td>
           <td>
             <div style="display: flex; gap: 6px;">
               ${isAvailable ? `
@@ -298,16 +320,21 @@ const App = (() => {
     }
 
     tbody.innerHTML = filtered.map(s => {
-      const activeCount = parseInt(s.active_borrowed_count, 10) || 0;
-      const overdueCount = parseInt(s.overdue_count, 10) || 0;
+      const activeCount = parseInt(s.active_loans ?? s.active_borrowed_count ?? 0, 10);
+      const overdueCount = parseInt(s.overdue_loans ?? s.overdue_count ?? 0, 10);
 
       return `
         <tr>
-          <td><strong>${escapeHtml(s.name)}</strong></td>
-          <td><code>${escapeHtml(s.student_id || '-')}</code></td>
+          <td>
+            <strong>${escapeHtml(s.name)}</strong><br>
+            <small style="color: var(--gray-600);">${escapeHtml(s.membership_id || '')}</small>
+          </td>
+          <td><code style="color: var(--primary); font-weight: bold;">${escapeHtml(s.student_id || '-')}</code></td>
           <td>${escapeHtml(s.email)}</td>
-          <td>${escapeHtml(s.department || '-')}</td>
-          <td>${escapeHtml(s.phone || '-')}</td>
+          <td>
+            <strong>${escapeHtml(s.department || '-')}</strong><br>
+            <small style="color: var(--gray-600);">${escapeHtml(s.semester || 'Semester V')}</small>
+          </td>
           <td>
             <span class="badge ${activeCount > 0 ? 'badge-info' : 'badge-neutral'}">
               ${activeCount} books
@@ -317,6 +344,11 @@ const App = (() => {
             <span class="badge ${overdueCount > 0 ? 'badge-danger' : 'badge-neutral'}">
               ${overdueCount} overdue
             </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="App.viewStudentCard(${s.id})">
+              🪪 View Digital Card
+            </button>
           </td>
         </tr>
       `;
@@ -689,6 +721,412 @@ const App = (() => {
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
+  // ==================== DESK SCAN & GO (MODULE 8) ====================
+  async function handleDeskScan() {
+    const input = document.getElementById('desk-scan-input');
+    const panel = document.getElementById('desk-student-panel');
+    const code = (input?.value || '').trim();
+
+    if (!code) {
+      API.showToast('Please scan a QR code or enter a Student Registration Number.', 'warning');
+      input?.focus();
+      return;
+    }
+
+    try {
+      panel.style.display = 'block';
+      panel.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--gray-600);">⏳ Scanning QR token and retrieving student profile...</div>';
+
+      const data = await API.getStudentByCode(code);
+      const s = data.student;
+      const activeLoans = data.active_loans || [];
+      const reservations = data.reservations || [];
+      const readyRes = reservations.filter(r => r.status === 'ready_for_pickup' || r.status === 'approved');
+
+      panel.innerHTML = `
+        <div class="desk-console-grid">
+          <!-- Student Mini Digital Card -->
+          <div style="background: white; border: 1px solid var(--gray-300); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 12px;">
+              <img src="${escapeHtml(s.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80')}" 
+                   style="width: 56px; height: 68px; object-fit: cover; border-radius: 6px; border: 2px solid var(--primary);">
+              <div>
+                <h4 style="margin: 0; font-size: 15px; color: var(--gray-900);">${escapeHtml(s.name)}</h4>
+                <div style="font-family: monospace; font-weight: bold; color: var(--danger); font-size: 12px;">${escapeHtml(s.student_id)}</div>
+                <div style="font-size: 11px; color: var(--gray-600);">${escapeHtml(s.department || '')}</div>
+                <div style="font-size: 10px; color: var(--secondary); font-weight: 600;">ID: ${escapeHtml(s.membership_id || '')}</div>
+              </div>
+            </div>
+            
+            <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 10px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Borrow Limit:</span>
+                <strong>${data.active_loans_count} / ${data.borrow_limit} books</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Pending Fines:</span>
+                <strong style="color: ${data.total_pending_fine > 0 ? 'var(--danger)' : 'var(--success)'};">₹${data.total_pending_fine.toFixed(2)}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Eligibility:</span>
+                <span class="badge ${data.can_borrow ? 'badge-success' : 'badge-danger'}">
+                  ${data.can_borrow ? 'Eligible to Borrow' : 'Limit Reached'}
+                </span>
+              </div>
+            </div>
+
+            <div style="margin-top: 12px; display: flex; gap: 6px;">
+              <button class="btn btn-sm btn-secondary" style="flex: 1;" onclick="App.viewStudentCard(${s.id})">
+                🪪 Full ID Card
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Loans & Reservations Actions -->
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <!-- Approved Reservations Ready for Pickup -->
+            <div style="background: white; border: 1px solid var(--gray-300); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; font-size: 13px; color: var(--primary);">📋 Reserved Volumes Ready for Desk Pickup (${readyRes.length})</h4>
+              </div>
+              ${readyRes.length === 0 ? '<p style="font-size: 12px; color: var(--gray-600); margin: 0;">No pending reserved books for this student.</p>' : `
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${readyRes.map(r => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 8px 12px; border-radius: 6px;">
+                      <div>
+                        <strong>${escapeHtml(r.title)}</strong>
+                        <div style="font-size: 11px; color: var(--gray-600);">
+                          Res ID: <code>${escapeHtml(r.reservation_code)}</code> • Preferred: ${formatDate(r.preferred_date)} (${escapeHtml(r.timeslot)})
+                        </div>
+                        <div style="font-size: 10px; color: var(--success); font-weight: bold;">
+                          📍 Block ${escapeHtml(r.block || 'A')} • Fl ${r.floor || 2} • ${escapeHtml(r.rack || 'Rack 08')}
+                        </div>
+                      </div>
+                      <button class="btn btn-sm btn-primary" onclick="App.handleIssueReservation(${r.id})">
+                        ⚡ Issue Reserved
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+
+            <!-- Active Borrowed Books (Return) -->
+            <div style="background: white; border: 1px solid var(--gray-300); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="margin: 0; font-size: 13px; color: var(--primary);">📚 Currently Borrowed Volumes (${activeLoans.length})</h4>
+              </div>
+              ${activeLoans.length === 0 ? '<p style="font-size: 12px; color: var(--gray-600); margin: 0;">Student currently has 0 active borrowed books.</p>' : `
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${activeLoans.map(l => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--gray-50); border: 1px solid var(--gray-200); padding: 8px 12px; border-radius: 6px;">
+                      <div>
+                        <strong>${escapeHtml(l.title)}</strong>
+                        <div style="font-size: 11px; color: var(--gray-600);">
+                          Due: ${formatDate(l.due_date)} • ${l.days_overdue > 0 ? `<span style="color: var(--danger); font-weight: bold;">Overdue by ${l.days_overdue} days (Fine: ₹${l.current_fine.toFixed(2)})</span>` : '<span style="color: var(--success);">On schedule</span>'}
+                        </div>
+                      </div>
+                      <button class="btn btn-sm btn-success" onclick="App.confirmReturn(${l.id}, '${escapeHtml(l.title)}', ${l.days_overdue})">
+                        Mark Return
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      panel.style.display = 'block';
+      panel.innerHTML = `<div style="padding: 16px; color: var(--danger); background: #fee2e2; border-radius: 8px;">❌ Error: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
+  function clearDeskScan() {
+    const input = document.getElementById('desk-scan-input');
+    const panel = document.getElementById('desk-student-panel');
+    if (input) input.value = '';
+    if (panel) {
+      panel.style.display = 'none';
+      panel.innerHTML = '';
+    }
+  }
+
+  // ==================== RESERVATIONS MANAGEMENT ====================
+  async function loadReservations() {
+    const filter = document.getElementById('res-status-filter')?.value || 'all';
+    const tbody = document.getElementById('reservations-tbody');
+    try {
+      const data = await API.getReservations(filter);
+      renderReservationsTable(data.reservations || []);
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color: var(--danger);">Failed to load reservations: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  function renderReservationsTable(reservations) {
+    const tbody = document.getElementById('reservations-tbody');
+    if (!reservations || reservations.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No reservations found matching filter.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = reservations.map(r => {
+      let badgeClass = 'badge-neutral';
+      if (r.status === 'ready_for_pickup') badgeClass = 'badge-success';
+      else if (r.status === 'approved') badgeClass = 'badge-info';
+      else if (r.status === 'pending') badgeClass = 'badge-warning';
+      else if (r.status === 'rejected') badgeClass = 'badge-danger';
+
+      return `
+        <tr>
+          <td>
+            <code style="font-weight: bold; color: var(--primary);">${escapeHtml(r.reservation_code)}</code>
+          </td>
+          <td>
+            <strong>${escapeHtml(r.student_name)}</strong><br>
+            <small style="color: var(--gray-600);">${escapeHtml(r.student_id || '')} • ${escapeHtml(r.department || '')}</small>
+          </td>
+          <td>
+            <strong>${escapeHtml(r.book_title)}</strong><br>
+            <span class="shelf-coordinate-pill" style="font-size: 10px; margin-top: 3px;">
+              📍 Block ${escapeHtml(r.block || 'A')} • Fl ${r.floor || 2} • ${escapeHtml(r.rack || 'Rack 08')}
+            </span>
+          </td>
+          <td>
+            <strong>${formatDate(r.preferred_date)}</strong><br>
+            <small style="color: var(--secondary); font-weight: 600;">${escapeHtml(r.timeslot)}</small>
+          </td>
+          <td><span class="badge ${badgeClass}">${r.status}</span></td>
+          <td>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              ${r.status === 'pending' ? `
+                <button class="btn btn-sm btn-success" onclick="App.handleApproveReservation(${r.id})">
+                  ✅ Approve
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="App.handleRejectReservation(${r.id})">
+                  ❌ Reject
+                </button>
+              ` : ''}
+              ${r.status === 'approved' || r.status === 'ready_for_pickup' ? `
+                <button class="btn btn-sm btn-primary" onclick="App.handleIssueReservation(${r.id})">
+                  ⚡ 1-Click Issue
+                </button>
+              ` : ''}
+              ${r.status === 'fulfilled' ? '<span style="font-size: 12px; color: var(--gray-600);">Fulfilled</span>' : ''}
+              ${r.status === 'rejected' ? '<span style="font-size: 12px; color: var(--danger);">Rejected</span>' : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function handleApproveReservation(id) {
+    try {
+      const res = await API.approveReservation(id, true);
+      API.showToast(res.message, 'success');
+      loadReservations();
+    } catch (err) {
+      API.showToast(err.message, 'error');
+    }
+  }
+
+  async function handleRejectReservation(id) {
+    const reason = prompt('Enter rejection reason (will be notified to the student):', 'Copy in binding / reserved for exam reference');
+    if (!reason) return;
+
+    try {
+      const res = await API.rejectReservation(id, reason);
+      API.showToast(res.message, 'info');
+      loadReservations();
+    } catch (err) {
+      API.showToast(err.message, 'error');
+    }
+  }
+
+  async function handleIssueReservation(id) {
+    try {
+      const res = await API.issueFromReservation(id);
+      API.showToast(res.message, 'success');
+      loadReservations();
+      if (activeTab === 'borrowings') loadBorrowings();
+      if (activeTab === 'overview') loadOverview();
+    } catch (err) {
+      API.showToast(err.message, 'error');
+    }
+  }
+
+  // ==================== SMART WAITING LIST ====================
+  async function loadWaitingLists() {
+    const tbody = document.getElementById('waitinglist-tbody');
+    try {
+      const data = await API.getWaitingLists();
+      renderWaitingListsTable(data.waiting_list || []);
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="color: var(--danger);">Failed to load waiting list: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  function renderWaitingListsTable(records) {
+    const tbody = document.getElementById('waitinglist-tbody');
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No students currently in waiting queues. All available copies in circulation or in stock.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = records.map(w => {
+      const isNotified = w.status === 'notified';
+      return `
+        <tr>
+          <td><span class="badge ${w.queue_position === 1 ? 'badge-primary' : 'badge-neutral'}">#${w.queue_position} In Line</span></td>
+          <td>
+            <strong>${escapeHtml(w.book_title)}</strong><br>
+            <small style="color: var(--gray-600);">${escapeHtml(w.isbn || '')}</small>
+          </td>
+          <td>
+            <strong>${escapeHtml(w.student_name)}</strong><br>
+            <code>${escapeHtml(w.student_id || '')}</code>
+          </td>
+          <td>${escapeHtml(w.department || '-')}</td>
+          <td>
+            <span class="badge ${isNotified ? 'badge-success' : 'badge-warning'}">
+              ${isNotified ? 'Alert Sent (Hold Ready)' : 'Waiting for Return'}
+            </span>
+          </td>
+          <td>${formatDate(w.created_at)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ==================== ANNOUNCEMENTS ====================
+  async function loadAnnouncements() {
+    const tbody = document.getElementById('announcements-tbody');
+    try {
+      const data = await API.getAnnouncements();
+      renderAnnouncementsTable(data.announcements || []);
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="color: var(--danger);">Failed to load announcements: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+
+  function renderAnnouncementsTable(records) {
+    const tbody = document.getElementById('announcements-tbody');
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No active announcements posted.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = records.map(a => {
+      let icon = '📢';
+      if (a.category === 'holiday') icon = '🏖️';
+      else if (a.category === 'new_arrival') icon = '📚';
+      else if (a.category === 'exam_hours') icon = '⏳';
+
+      return `
+        <tr>
+          <td><span class="badge badge-info">${icon} ${escapeHtml(a.category)}</span></td>
+          <td><strong>${escapeHtml(a.title)}</strong></td>
+          <td style="max-width: 340px; font-size: 13px; color: var(--gray-700);">${escapeHtml(a.content)}</td>
+          <td>${formatDate(a.created_at)}</td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="App.handleDeleteAnnouncement(${a.id})">
+              Delete
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function openAddAnnouncementModal() {
+    document.getElementById('modal-add-announcement')?.classList.add('active');
+  }
+
+  async function handleCreateAnnouncement(e) {
+    e.preventDefault();
+    const title = document.getElementById('ann-title').value.trim();
+    const category = document.getElementById('ann-category').value;
+    const broadcast = document.getElementById('ann-broadcast').checked;
+    const content = document.getElementById('ann-content').value.trim();
+
+    try {
+      const res = await API.createAnnouncement(title, content, category, broadcast);
+      API.showToast(res.message, 'success');
+      closeModals();
+      loadAnnouncements();
+    } catch (err) {
+      API.showToast(err.message, 'error');
+    }
+  }
+
+  async function handleDeleteAnnouncement(id) {
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
+    try {
+      await API.deleteAnnouncement(id);
+      API.showToast('Announcement removed.', 'info');
+      loadAnnouncements();
+    } catch (err) {
+      API.showToast(err.message, 'error');
+    }
+  }
+
+  // ==================== VIEW DIGITAL MEMBERSHIP CARD (MODULE 8) ====================
+  async function viewStudentCard(studentId) {
+    const modal = document.getElementById('modal-digital-card');
+    const container = document.getElementById('digital-card-modal-content');
+    modal.classList.add('active');
+    container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--gray-600);">Loading Digital Library Identity Card...</div>';
+
+    try {
+      const data = await API.getDigitalCard(studentId);
+      const c = data.card;
+
+      container.innerHTML = `
+        <div class="id-card-wrap">
+          <div class="library-id-card">
+            <div class="id-card-header">
+              <div class="id-card-motto">“${escapeHtml(c.motto)}”</div>
+              <div class="id-card-inst">${escapeHtml(c.institution)}</div>
+              <div class="id-card-sub">${escapeHtml(c.board)}</div>
+            </div>
+
+            <div class="id-card-body">
+              <div class="id-card-photo-box">
+                <img src="${escapeHtml(c.photo_url)}" class="id-card-photo" alt="Student Photo">
+                <div class="id-card-validity">VALID THRU: ${escapeHtml(c.validity)}</div>
+              </div>
+
+              <div class="id-card-details">
+                <div class="id-card-name">${escapeHtml(c.student_name)}</div>
+                <div class="id-card-reg">${escapeHtml(c.student_id)}</div>
+                <div class="id-card-meta">
+                  <strong>Course:</strong> ${escapeHtml(c.course)}<br>
+                  <strong>Dept:</strong> ${escapeHtml(c.department)}<br>
+                  <strong>Sem:</strong> ${escapeHtml(c.semester)}<br>
+                  <strong>Library ID:</strong> <code>${escapeHtml(c.membership_id)}</code><br>
+                  <strong>Limit:</strong> ${c.active_loans} / ${c.borrow_limit} books (${c.remaining_slots} remaining)
+                </div>
+              </div>
+            </div>
+
+            <div class="id-card-footer">
+              <img src="${c.qr_code_url}" class="id-card-qr-img" alt="Digital QR Card">
+              <div class="id-card-qr-text">
+                <strong>⚡ Dynamic Desk Checkout QR</strong>
+                Scan this QR at the Central Circulation desk for instant book issue, renewal, and return validation.
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      container.innerHTML = `<div style="padding: 20px; color: var(--danger);">Failed to load digital card: ${escapeHtml(err.message)}</div>`;
+    }
+  }
+
   // Setup Event Listeners
   function setupListeners() {
     // Navigation Tabs
@@ -780,6 +1218,12 @@ const App = (() => {
     // Form: Add Book
     document.getElementById('form-add-book')?.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const block = document.getElementById('add-block')?.value.trim() || 'A';
+      const floor = parseInt(document.getElementById('add-floor')?.value, 10) || 2;
+      const section = document.getElementById('add-section')?.value.trim() || 'Computer Science';
+      const rack = document.getElementById('add-rack')?.value.trim() || 'Rack 08';
+      const shelfTier = document.getElementById('add-shelf-tier')?.value.trim() || 'Shelf 03';
+
       const payload = {
         title: document.getElementById('add-title').value.trim(),
         author: document.getElementById('add-author').value.trim(),
@@ -787,14 +1231,19 @@ const App = (() => {
         genre: document.getElementById('add-genre').value.trim(),
         published_year: document.getElementById('add-year').value || null,
         total_copies: parseInt(document.getElementById('add-copies').value, 10),
-        shelf_location: document.getElementById('add-shelf').value.trim(),
+        shelf_location: `Block ${block}, Floor ${floor}, ${section}, ${rack}, ${shelfTier}`,
+        block,
+        floor,
+        section,
+        rack,
+        shelf: shelfTier,
         cover_url: document.getElementById('add-cover-url').value.trim() || null,
         description: document.getElementById('add-desc').value.trim(),
       };
 
       try {
         await API.createBook(payload);
-        API.showToast('Book added successfully!', 'success');
+        API.showToast('Book added successfully with exact shelf coordinates!', 'success');
         closeModals();
         if (activeTab === 'catalog') loadBooks();
         if (activeTab === 'overview') loadOverview();
@@ -852,6 +1301,11 @@ const App = (() => {
       }
     });
 
+    // Desk Scan Enter Key Listener
+    document.getElementById('desk-scan-input')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleDeskScan();
+    });
+
     // Close modal on escape key
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModals();
@@ -889,6 +1343,20 @@ const App = (() => {
     confirmReturn,
     exportCatalogCSV,
     exportLoansCSV,
+
+    // Module additions
+    handleDeskScan,
+    clearDeskScan,
+    loadReservations,
+    handleApproveReservation,
+    handleRejectReservation,
+    handleIssueReservation,
+    loadWaitingLists,
+    loadAnnouncements,
+    openAddAnnouncementModal,
+    handleCreateAnnouncement,
+    handleDeleteAnnouncement,
+    viewStudentCard,
   };
 })();
 

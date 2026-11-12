@@ -178,5 +178,42 @@ const API = (() => {
     },
 
     getStats: () => request('/api/borrow/stats'),
+
+    // Desk Scanner & Digital Library Membership Card (Module 8)
+    getStudentByCode: (code) => request(`/api/auth/student-by-code/${encodeURIComponent(code)}`),
+    getDigitalCard: (userId) => request(`/api/auth/student-card${userId ? '?user_id=' + userId : ''}`),
+
+    // Online Book Reservations
+    getReservations: (status = 'all', search = '') => {
+      const params = new URLSearchParams();
+      if (status) params.append('status', status);
+      if (search) params.append('search', search);
+      return request(`/api/reservations?${params.toString()}`);
+    },
+    approveReservation: (id, readyForPickup = true, deadline = null) => request(`/api/reservations/${id}/approve`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ready_for_pickup: readyForPickup, pickup_deadline: deadline }),
+    }),
+    rejectReservation: (id, reason = '') => request(`/api/reservations/${id}/reject`, {
+      method: 'PATCH',
+      body: JSON.stringify({ reason }),
+    }),
+    issueFromReservation: (id, dueDate = null) => request(`/api/reservations/${id}/issue`, {
+      method: 'POST',
+      body: JSON.stringify({ due_date: dueDate }),
+    }),
+
+    // Smart Waiting List
+    getWaitingLists: () => request('/api/waiting-list/all'),
+
+    // Announcements
+    getAnnouncements: () => request('/api/announcements'),
+    createAnnouncement: (title, content, category = 'general', broadcast = true) => request('/api/announcements', {
+      method: 'POST',
+      body: JSON.stringify({ title, content, category, broadcast }),
+    }),
+    deleteAnnouncement: (id) => request(`/api/announcements/${id}`, {
+      method: 'DELETE',
+    }),
   };
 })();
