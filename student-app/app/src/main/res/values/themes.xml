@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.StudentLibraryApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.StudentLibraryApp" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>

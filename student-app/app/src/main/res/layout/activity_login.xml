@@ -77,31 +77,26 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sign In to Student Account"
+                    android:text="Student Portal Sign In"
                     android:textColor="#0F172A"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Enter your college registration number or email"
+                    android:layout_marginTop="3dp"
+                    android:text="Enter your student registration number or college email"
                     android:textColor="#64748B"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
 
-                <!-- Server Endpoint (Collapsible/Discrete) -->
+                <!-- Hidden Server Endpoint (Defaults to Live Cloud Server) -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilServerUrl"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxStrokeColor="@color/primary"
+                    android:visibility="gone"
                     android:hint="Cloud Server Connection">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -119,20 +114,22 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="20dp"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusBottomEnd="12dp"
                     app:boxStrokeColor="@color/primary"
-                    android:hint="Registration Number / Email">
+                    app:hintTextColor="@color/primary"
+                    android:hint="Student Roll No / Email">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etIdentifier"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="24054-CPS-062"
-                        android:textSize="14sp"
+                        android:textColor="#0F172A"
+                        android:textSize="15sp"
                         android:inputType="textEmailAddress" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -142,12 +139,13 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="16dp"
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusBottomEnd="12dp"
                     app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/primary"
                     android:hint="@string/password"
                     app:passwordToggleEnabled="true">
 
@@ -156,7 +154,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="student123"
-                        android:textSize="14sp"
+                        android:textColor="#0F172A"
+                        android:textSize="15sp"
                         android:inputType="textPassword" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -166,18 +165,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="16dp"
                     android:visibility="gone" />
 
                 <!-- Sign In Button -->
                 <Button
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="18dp"
-                    android:text="Authenticate &amp; Open Portal"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="20dp"
+                    android:text="Sign In to Library Portal"
                     android:textAllCaps="false"
-                    android:textSize="15sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     app:cornerRadius="12dp"
                     android:backgroundTint="@color/primary" />
