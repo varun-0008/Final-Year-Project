@@ -206,20 +206,9 @@ app.get(['/login', '/signin'], (req, res) => {
   res.sendFile(path.join(adminWebPath, 'login.html'));
 });
 
-// Download compiled Android APK
+// Download compiled Android APK -> Redirect to GitHub Production Release
 app.get(['/download/apk', '/student-app-debug.apk'], (req, res) => {
-  const possiblePaths = [
-    path.join(adminWebPath, 'student-app-debug.apk'),
-    path.join(__dirname, '..', 'student-app-debug.apk'),
-    path.join(process.cwd(), 'admin-web', 'student-app-debug.apk'),
-    path.join(process.cwd(), 'student-app-debug.apk'),
-  ];
-  const found = possiblePaths.find(p => fs.existsSync(p));
-  if (found) {
-    return res.download(found, 'SmartCampusLibrary-StudentApp.apk');
-  }
-  // Static asset redirect
-  res.redirect('/admin-web/student-app-debug.apk');
+  res.redirect('https://github.com/varun-0008/Final-Year-Project/releases/download/v1.0.0/student-app-debug.apk');
 });
 
 // Global 404 handler for API routes

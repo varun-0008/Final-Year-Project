@@ -7,6 +7,13 @@
       "includeFiles": "backend/database/**,backend/scripts/**,student-app-debug.apk,admin-web/**"
     }
   },
+  "redirects": [
+    {
+      "source": "/download/apk",
+      "destination": "https://github.com/varun-0008/Final-Year-Project/releases/download/v1.0.0/student-app-debug.apk",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",
