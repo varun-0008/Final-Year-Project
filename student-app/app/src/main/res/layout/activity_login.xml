@@ -51,7 +51,7 @@
                 android:id="@+id/etServerUrl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="http://10.0.2.2:5000/"
+                android:text="https://final-year-project-eight-ebon.vercel.app/"
                 android:textSize="13sp"
                 android:inputType="textUri" />
         </com.google.android.material.textfield.TextInputLayout>

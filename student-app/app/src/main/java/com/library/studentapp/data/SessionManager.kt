@@ -15,8 +15,8 @@ class SessionManager(context: Context) {
         private const val KEY_USER = "user_profile"
         private const val KEY_BASE_URL = "base_url"
 
-        // Default: 10.0.2.2 for Android Emulator, or localhost
-        const val DEFAULT_BASE_URL = "http://10.0.2.2:5000/"
+        // Default: Live Production Vercel Server
+        const val DEFAULT_BASE_URL = "https://final-year-project-eight-ebon.vercel.app/"
     }
 
     fun saveAuthToken(token: String) {
