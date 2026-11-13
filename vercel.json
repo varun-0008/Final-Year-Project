@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/student",
+      "destination": "/admin-web/student.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin-web/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/admin-web/login.html"
+    },
+    {
+      "source": "/download/apk",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "destination": "/admin-web/portal.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/admin-web/$1"
+    }
+  ]
+}

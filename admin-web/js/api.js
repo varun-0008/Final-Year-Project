@@ -1,10 +1,17 @@
 // API helper module for Librarian Admin Site (Vanilla JavaScript)
 
 const API = (() => {
-  // If served through the backend server itself on port 5000, use origin; otherwise route to backend
-  const BASE_URL = (window.location.port === '5000')
-    ? window.location.origin
-    : (window.location.protocol === 'file:' ? 'http://localhost:5000' : `${window.location.protocol}//${window.location.hostname}:5000`);
+  // Dynamic API Base URL:
+  // On Vercel / production or on backend port 5000: use window.location.origin
+  // Only route to :5000 if local dev on another port (e.g. Live Server 5500 / 3000) or file://
+  const isLocalDevWithCustomPort = (
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+    window.location.port &&
+    window.location.port !== '5000'
+  );
+  const BASE_URL = (window.location.protocol === 'file:' || isLocalDevWithCustomPort)
+    ? 'http://localhost:5000'
+    : window.location.origin;
 
   function getToken() {
     return localStorage.getItem('library_admin_token');

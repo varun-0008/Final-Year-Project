@@ -6,10 +6,16 @@ const StudentPortal = (() => {
   let activeTab = 'catalog';
   let activeGenre = '';
 
-  // Smart API Base URL detector: If served on port 5000 use origin, otherwise point to backend port 5000
-  const API_BASE = (window.location.port === '5000')
-    ? ''
-    : (window.location.protocol === 'file:' ? 'http://localhost:5000' : `${window.location.protocol}//${window.location.hostname}:5000`);
+  // Dynamic API Base: On Vercel / production, use '' (relative to current origin).
+  // On local Live Server (5500/3000) or file://, fallback to http://localhost:5000.
+  const isLocalDevWithCustomPort = (
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+    window.location.port &&
+    window.location.port !== '5000'
+  );
+  const API_BASE = (window.location.protocol === 'file:' || isLocalDevWithCustomPort)
+    ? 'http://localhost:5000'
+    : '';
 
   function getStudentToken() {
     return localStorage.getItem('library_student_token');

@@ -4,32 +4,77 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const dataDir = path.join(__dirname, '..', 'database', 'pgdata');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+const isVercel = Boolean(process.env.VERCEL);
+const dataDir = isVercel
+  ? path.join('/tmp', 'pgdata')
+  : path.join(__dirname, '..', 'database', 'pgdata');
+
+try {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+} catch (_) {}
 
 let activeMode = 'checking'; // 'native' | 'pglite'
 let nativePool = null;
 let pgliteInstance = null;
 
-// Initialize native pool
-nativePool = new Pool({
-  host: process.env.PGHOST || 'localhost',
-  port: parseInt(process.env.PGPORT, 10) || 5432,
-  user: process.env.PGUSER || 'postgres',
-  password: process.env.PGPASSWORD || 'postgres',
-  database: process.env.PGDATABASE || 'library_db',
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// Determine connection strategy
+const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+
+if (connectionString) {
+  nativePool = new Pool({
+    connectionString,
+    ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false },
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
+} else {
+  nativePool = new Pool({
+    host: process.env.PGHOST || 'localhost',
+    port: parseInt(process.env.PGPORT, 10) || 5432,
+    user: process.env.PGUSER || 'postgres',
+    password: process.env.PGPASSWORD || 'postgres',
+    database: process.env.PGDATABASE || 'library_db',
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  });
+}
 
 nativePool.on('error', () => {
   // Suppress uncaught background pool errors when fallback is used
 });
 
 let initPromise = null;
+
+async function autoSeedIfEmpty(clientOrPool) {
+  try {
+    const checkTable = await clientOrPool.query(
+      "SELECT 1 FROM information_schema.tables WHERE table_name = 'users'"
+    );
+    const rowCount = checkTable.rowCount ?? (checkTable.rows ? checkTable.rows.length : 0);
+    if (rowCount === 0) {
+      console.log('🌱 Applying schema and seeding showcase data...');
+      const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql');
+      if (fs.existsSync(schemaPath)) {
+        const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+        if (typeof clientOrPool.exec === 'function') {
+          await clientOrPool.exec(schemaSql);
+        } else {
+          await clientOrPool.query(schemaSql);
+        }
+      }
+      const setupScript = require('../database/setup');
+      if (setupScript.seedWithClient) {
+        await setupScript.seedWithClient(clientOrPool);
+      }
+    }
+  } catch (err) {
+    console.warn('Notice on auto-seeding check:', err.message);
+  }
+}
 
 async function getEngine() {
   if (activeMode === 'native') return { mode: 'native', pool: nativePool };
@@ -38,36 +83,21 @@ async function getEngine() {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    // Attempt native PostgreSQL ping
+    // 1. Attempt native/cloud PostgreSQL connection
     try {
       const client = await nativePool.connect();
       await client.query('SELECT 1');
+      await autoSeedIfEmpty(client);
       client.release();
       activeMode = 'native';
-      console.log('📦 Database: Connected to external PostgreSQL service on port ' + (process.env.PGPORT || 5432));
+      console.log('📦 Database: Connected to PostgreSQL service.');
       return { mode: 'native', pool: nativePool };
     } catch (err) {
-      // Port 5432 not reachable, fallback to persistent embedded PostgreSQL (PGlite)
+      // 2. If external database is not reachable, fallback to persistent/tmp PGlite
       activeMode = 'pglite';
       pgliteInstance = new PGlite(dataDir);
-      console.log('📦 Database: Running with embedded persistent PostgreSQL engine (PGlite)');
-      
-      // Check if schema has been applied; if not, apply it and seed
-      try {
-        const checkTable = await pgliteInstance.query(
-          "SELECT 1 FROM information_schema.tables WHERE table_name = 'users'"
-        );
-        if (checkTable.rows.length === 0) {
-          console.log('🌱 Applying schema and seeding embedded PostgreSQL database...');
-          const setupScript = require('../database/setup');
-          if (setupScript.seedWithClient) {
-            await setupScript.seedWithClient(pgliteInstance);
-          }
-        }
-      } catch (setupErr) {
-        console.error('Error auto-seeding embedded database:', setupErr.message);
-      }
-
+      console.log(`📦 Database: Running with embedded PostgreSQL engine (PGlite) [Storage: ${dataDir}]`);
+      await autoSeedIfEmpty(pgliteInstance);
       return { mode: 'pglite', pglite: pgliteInstance };
     }
   })();
@@ -95,7 +125,6 @@ async function connectClient() {
   if (engine.mode === 'native') {
     return engine.pool.connect();
   } else {
-    // Return compatible client interface for PGlite
     return {
       query: async (text, params = []) => {
         const res = await engine.pglite.query(text, params);
