@@ -19,8 +19,13 @@ let activeMode = 'checking'; // 'native' | 'pglite'
 let nativePool = null;
 let pgliteInstance = null;
 
-// Determine connection strategy
-const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+// Determine connection strategy (supports DATABASE_URL, POSTGRES_URL, or STORAGE_URL from Neon/Vercel)
+const connectionString = (
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  process.env.STORAGE_URL ||
+  process.env.STORAGE_DATABASE_URL
+);
 
 if (connectionString) {
   nativePool = new Pool({
