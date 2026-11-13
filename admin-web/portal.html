@@ -261,6 +261,43 @@
       color: #64748b;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
+
+    @media (max-width: 640px) {
+      .gateway-header {
+        padding: 28px 16px 10px 16px;
+      }
+      .gateway-header h1 {
+        font-size: 24px;
+      }
+      .gateway-header p {
+        font-size: 13px;
+      }
+      .portal-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 16px;
+        margin: 12px auto 24px auto;
+      }
+      .portal-card {
+        padding: 22px 18px;
+        border-radius: 16px;
+      }
+      .apk-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 18px 16px;
+        gap: 12px;
+      }
+      .apk-info {
+        flex-direction: column;
+        gap: 6px;
+      }
+      .btn-apk {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+      }
+    }
   </style>
 </head>
 <body>
@@ -293,7 +330,7 @@
           Enter Student Portal &rarr;
         </a>
         <div class="demo-pill">
-          Scholar Access: <code>24054-CPS-062</code> | Pass: <code>student123</code>
+          Student Access with PIN / College Email
         </div>
       </div>
     </div>
@@ -319,7 +356,7 @@
           Enter Librarian Portal &rarr;
         </a>
         <div class="demo-pill">
-          Staff Access: <code>admin@library.com</code> | Pass: <code>admin123</code>
+          Authorized Circulation Staff &amp; Administrator Access
         </div>
       </div>
     </div>

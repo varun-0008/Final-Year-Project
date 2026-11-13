@@ -62,10 +62,18 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
+      <!-- Mobile Sidebar Backdrop -->
+      <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('open'); this.classList.remove('active');"></div>
+
       <header class="top-bar">
-        <div class="page-title">
-          <h1 id="page-title-text">Dashboard Overview</h1>
-          <p id="page-subtitle-text">Library metrics, real-time inventory, and active loans</p>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button id="sidebar-toggle-btn" class="btn btn-secondary mobile-hamburger-btn" style="display: none; padding: 6px 12px; font-size: 18px;" onclick="document.querySelector('.sidebar').classList.toggle('open'); document.getElementById('sidebar-backdrop').classList.toggle('active');">
+            ☰
+          </button>
+          <div class="page-title">
+            <h1 id="page-title-text">Dashboard Overview</h1>
+            <p id="page-subtitle-text">Library metrics, real-time inventory, and active loans</p>
+          </div>
         </div>
         <div class="top-bar-actions">
           <a href="/student" class="btn btn-secondary" style="text-decoration: none; color: inherit;">
@@ -625,7 +633,7 @@
           <div style="margin-top: 18px; font-size: 13px; color: var(--gray-700);">
             <strong>Supported column headers:</strong>
             <p style="color: var(--gray-600); font-size: 12px; margin-top: 4px;">
-              <code>Student Name</code> (or <code>Name</code>), <code>Email</code>, <code>Student ID</code>, <code>Department</code>, <code>Phone</code>, <code>Password</code> (default: <code>student123</code>).
+              <code>Student Name</code> (or <code>Name</code>), <code>Email</code>, <code>PIN</code> (or <code>Student PIN</code>), <code>Department</code>, <code>Phone</code>, <code>Password</code> (default: <code>student123</code>).
             </p>
             <a href="/api/auth/students/template" download style="display: inline-block; margin-top: 6px; color: var(--secondary); font-weight: 500;">
               📥 Download pre-formatted template

@@ -181,7 +181,7 @@ const StudentPortal = (() => {
   }
 
   async function openForgotPassword() {
-    const ident = prompt('Enter your College Registration Number or Email:');
+    const ident = prompt('Enter your Student PIN or College Email:');
     if (!ident) return;
 
     try {
@@ -219,6 +219,9 @@ const StudentPortal = (() => {
   function switchTab(tab) {
     activeTab = tab;
     document.querySelectorAll('.student-nav-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+    });
+    document.querySelectorAll('.mobile-nav-item').forEach(btn => {
       btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
     });
 

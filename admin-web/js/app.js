@@ -39,6 +39,10 @@ const App = (() => {
     document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
+    // Auto-close mobile sidebar drawer on navigation
+    document.querySelector('.sidebar')?.classList.remove('open');
+    document.getElementById('sidebar-backdrop')?.classList.remove('active');
+
     const targetSection = document.getElementById(`tab-${tabName}`);
     if (targetSection) targetSection.style.display = 'block';
 
@@ -693,7 +697,7 @@ const App = (() => {
       API.showToast('No loans to export', 'info');
       return;
     }
-    const header = ['ID', 'Student Name', 'Student ID', 'Book Title', 'ISBN', 'Borrow Date', 'Due Date', 'Status', 'Fine'];
+    const header = ['ID', 'Student Name', 'Student PIN', 'Book Title', 'ISBN', 'Borrow Date', 'Due Date', 'Status', 'Fine'];
     const rows = cachedBorrows.map(r => [
       r.id,
       `"${(r.student_name || '').replace(/"/g, '""')}"`,
