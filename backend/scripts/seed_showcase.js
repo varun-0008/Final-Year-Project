@@ -35,6 +35,7 @@ async function seedShowcase(customClient = null) {
       INSERT INTO users (name, email, student_id, password_hash, role, phone, department, course, semester, membership_id, membership_valid_until, borrow_limit)
       VALUES 
         ('Chief Librarian', 'admin@library.com', 'LIB-001', $1, 'librarian', '+91-9876543210', 'Library Administration', 'Central Administration', 'Staff', 'LIB-ADM-001', '2030-12-31', 10),
+        ('Demo Student', 'student@college.edu', 'STU-1001', $2, 'student', '+91-9876543299', 'Computer Science and Engineering', 'Diploma in Computer Science and Engineering', 'Semester V', 'LIB-STU-1001', '2027-06-30', 3),
         ('Mattawada Tanish', 'tanish.24054cps062@gioe.ac.in', '24054-CPS-062', $2, 'student', '+91-9848012345', 'Cyber Physical Systems and Security', 'Diploma in Cyber Physical Systems and Security', 'Semester V', 'LIB-STU-24054062', '2027-06-30', 3),
         ('Varun Kumar', 'varun.24054cps018@gioe.ac.in', '24054-CPS-018', $2, 'student', '+91-9848054321', 'Cyber Physical Systems and Security', 'Diploma in Cyber Physical Systems and Security', 'Semester V', 'LIB-STU-24054018', '2027-06-30', 3),
         ('Ananya Sharma', 'ananya.24054cps045@gioe.ac.in', '24054-CPS-045', $2, 'student', '+91-9848098765', 'Computer Science and Engineering', 'Diploma in Computer Science and Engineering', 'Semester V', 'LIB-STU-24054045', '2027-06-30', 3)

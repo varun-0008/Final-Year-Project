@@ -1099,20 +1099,21 @@ const App = (() => {
             </div>
 
             <div class="id-card-body">
-              <div class="id-card-photo-box">
-                <img src="${escapeHtml(c.photo_url)}" class="id-card-photo" alt="Student Photo">
-                <div class="id-card-validity">VALID THRU: ${escapeHtml(c.validity)}</div>
-              </div>
-
-              <div class="id-card-details">
-                <div class="id-card-name">${escapeHtml(c.student_name)}</div>
-                <div class="id-card-reg">${escapeHtml(c.student_id)}</div>
-                <div class="id-card-meta">
+              <div class="id-card-details" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                  <div>
+                    <div class="id-card-name">${escapeHtml(c.student_name)}</div>
+                    <div class="id-card-reg">${escapeHtml(c.student_id)}</div>
+                  </div>
+                  <div class="id-card-validity" style="width: auto; font-size: 10px; padding: 4px 10px;">VALID THRU: ${escapeHtml(c.validity)}</div>
+                </div>
+                <div class="id-card-meta" style="font-size: 12px; line-height: 1.6;">
                   <strong>Course:</strong> ${escapeHtml(c.course)}<br>
-                  <strong>Dept:</strong> ${escapeHtml(c.department)}<br>
-                  <strong>Sem:</strong> ${escapeHtml(c.semester)}<br>
+                  <strong>Department:</strong> ${escapeHtml(c.department)}<br>
+                  <strong>Semester:</strong> ${escapeHtml(c.semester)}<br>
                   <strong>Library ID:</strong> <code>${escapeHtml(c.membership_id)}</code><br>
-                  <strong>Limit:</strong> ${c.active_loans} / ${c.borrow_limit} books (${c.remaining_slots} remaining)
+                  <strong>Status:</strong> <span class="badge badge-success" style="font-size: 10px;">${escapeHtml(c.status)}</span><br>
+                  <strong>Borrow Allowance:</strong> ${c.active_loans} / ${c.borrow_limit} books in active circulation (${c.remaining_slots} remaining)
                 </div>
               </div>
             </div>
