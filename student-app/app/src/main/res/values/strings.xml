@@ -3,11 +3,11 @@
     <string name="student_portal">Student Portal</string>
     <string name="login">Log In</string>
     <string name="register">Register</string>
-    <string name="sign_in_hint">Sign in with your Student ID or Email</string>
-    <string name="email_or_student_id">Student ID or Email</string>
+    <string name="sign_in_hint">Sign in with your PIN or Email</string>
+    <string name="email_or_student_id">PIN or Email</string>
     <string name="password">Password</string>
     <string name="name">Full Name</string>
-    <string name="student_id">Student ID (e.g. STU-1001)</string>
+    <string name="student_id">PIN</string>
     <string name="department">Department</string>
     <string name="phone">Phone Number</string>
     <string name="catalog">Library Catalog</string>

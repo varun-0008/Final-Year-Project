@@ -86,7 +86,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="Enter your student registration number or college email"
+                    android:text="Enter your PIN or college email"
                     android:textColor="#64748B"
                     android:textSize="13sp" />
 
@@ -121,13 +121,12 @@
                     app:boxCornerRadiusBottomEnd="12dp"
                     app:boxStrokeColor="@color/primary"
                     app:hintTextColor="@color/primary"
-                    android:hint="Student Roll No / Email">
+                    android:hint="PIN / Email">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etIdentifier"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="24054-CPS-062"
                         android:textColor="#0F172A"
                         android:textSize="15sp"
                         android:inputType="textEmailAddress" />
@@ -153,7 +152,6 @@
                         android:id="@+id/etPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="student123"
                         android:textColor="#0F172A"
                         android:textSize="15sp"
                         android:inputType="textPassword" />

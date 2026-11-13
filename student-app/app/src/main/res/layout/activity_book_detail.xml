@@ -176,11 +176,101 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Action Card: Online Reservation / Waiting List -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardReservationAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#CBD5E1"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tvReserveHeading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Online Book Reservation"
+                    android:textColor="#0F172A"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvReserveSubheading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Reserve this title in advance and collect it directly from the circulation desk."
+                    android:textColor="#64748B"
+                    android:textSize="13sp" />
+
+                <!-- Action Button -->
+                <Button
+                    android:id="@+id/btnReserveBook"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Reserve Book for Pickup"
+                    android:textAllCaps="false"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"
+                    android:backgroundTint="@color/primary" />
+
+                <ProgressBar
+                    android:id="@+id/pbReserve"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone" />
+
+                <!-- Reservation Status Banner (Shows upon successful reservation) -->
+                <LinearLayout
+                    android:id="@+id/layoutReservationStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_badge_available"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tvReservationCode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reservation: RES-2026-XXXX"
+                        android:textColor="@color/success"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvReservationDetails"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Status: Pending Librarian Confirmation. Present your PIN at the counter."
+                        android:textColor="#334155"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Information card regarding borrow procedures -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
             app:cardCornerRadius="12dp"
             app:cardBackgroundColor="@color/primary_light">
 
@@ -202,7 +292,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="Please note the Shelf Location above and present this book along with your Student ID card to the librarian at the circulation desk. Adding book borrowings is managed by library staff."
+                    android:text="Please note the Shelf Location above and present this book along with your Student PIN to the librarian at the circulation desk. Adding book borrowings is managed by library staff."
                     android:textColor="@color/primary"
                     android:textSize="13sp" />
             </LinearLayout>

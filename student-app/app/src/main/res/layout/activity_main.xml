@@ -81,7 +81,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="My Loans"
+            android:text="Loans &amp; Holds"
             android:textAllCaps="false"
             android:textColor="@color/gray_600" />
 
@@ -253,11 +253,48 @@
             android:layout_height="wrap_content"
             android:background="@color/primary_light"
             android:padding="12dp"
-            android:text="@string/notice_admin_borrow"
+            android:text="Notice: Counter issue &amp; return requires showing your Student PIN to library staff."
             android:textColor="@color/primary_dark"
             android:textSize="12sp"
             android:drawableStart="@drawable/ic_book"
             android:drawablePadding="8dp" />
+
+        <!-- Sub-tab filter: [ Active Loans ] [ My Reservations ] -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="6dp">
+
+            <Button
+                android:id="@+id/btnSubLoans"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="Active Loans"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="20dp"
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/btnSubReservations"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="My Reservations"
+                android:textAllCaps="false"
+                android:textSize="13sp"
+                app:cornerRadius="20dp"
+                android:textColor="@color/gray_700" />
+        </LinearLayout>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefreshBorrowed"
@@ -268,6 +305,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <!-- 1: Borrowed Books List -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvBorrowedBooks"
                     android:layout_width="match_parent"
@@ -281,6 +319,24 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="@string/no_borrowed_books"
+                    android:textColor="@color/gray_600"
+                    android:visibility="gone" />
+
+                <!-- 2: Reservations List -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvReservations"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingVertical="6dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvEmptyReservations"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="You have no active book reservations."
                     android:textColor="@color/gray_600"
                     android:visibility="gone" />
             </FrameLayout>
@@ -403,7 +459,7 @@
                                 android:id="@+id/tvCardRegNo"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Reg: 24054-CPS-062"
+                                android:text="PIN: -"
                                 android:textColor="#38bdf8"
                                 android:textSize="13sp"
                                 android:textStyle="bold"
@@ -508,7 +564,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="2dp"
-                        android:text="ID: STU-1001"
+                        android:text="PIN: -"
                         android:textColor="@color/secondary"
                         android:textSize="14sp"
                         android:textStyle="bold" />

@@ -1,6 +1,7 @@
 package com.library.studentapp.data
 
 import android.content.Context
+import okhttp3.ConnectionPool
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
     private var retrofit: Retrofit? = null
     private var lastBaseUrl: String? = null
+    private val connectionPool = ConnectionPool(10, 5, TimeUnit.MINUTES)
 
     fun getService(context: Context): ApiService {
         val sessionManager = SessionManager(context)
@@ -20,7 +22,7 @@ object RetrofitClient {
             lastBaseUrl = baseUrl
 
             val loggingInterceptor = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.BASIC
             }
 
             val authInterceptor = Interceptor { chain ->
@@ -32,8 +34,11 @@ object RetrofitClient {
             }
 
             val okHttpClient = OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(15, TimeUnit.SECONDS)
+                .connectionPool(connectionPool)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
                 .addInterceptor(authInterceptor)
                 .addInterceptor(loggingInterceptor)
                 .build()
