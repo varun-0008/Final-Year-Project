@@ -1,8 +1,8 @@
 // Smart Campus Library — Production Showcase Data Seeder
-const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-async function seedShowcase() {
+async function seedShowcase(customClient = null) {
+  const client = customClient || require('../config/db');
   console.log('🌱 Seeding complete production-grade showcase data...');
 
   try {
@@ -11,23 +11,23 @@ async function seedShowcase() {
     const studentHash = bcrypt.hashSync('student123', 10);
 
     // 2. Clear Existing Data (Clean reset for showcase)
-    await db.query('DELETE FROM notifications');
-    await db.query('DELETE FROM waiting_list');
-    await db.query('DELETE FROM reservations');
-    await db.query('DELETE FROM borrow_records');
-    await db.query('DELETE FROM announcements');
-    await db.query('DELETE FROM books');
-    await db.query('DELETE FROM users');
+    await client.query('DELETE FROM notifications');
+    await client.query('DELETE FROM waiting_list');
+    await client.query('DELETE FROM reservations');
+    await client.query('DELETE FROM borrow_records');
+    await client.query('DELETE FROM announcements');
+    await client.query('DELETE FROM books');
+    await client.query('DELETE FROM users');
 
     // Reset sequences if supported
     try {
-      await db.query('ALTER SEQUENCE users_id_seq RESTART WITH 1');
-      await db.query('ALTER SEQUENCE books_id_seq RESTART WITH 1');
-      await db.query('ALTER SEQUENCE borrow_records_id_seq RESTART WITH 1');
-      await db.query('ALTER SEQUENCE reservations_id_seq RESTART WITH 1');
-      await db.query('ALTER SEQUENCE waiting_list_id_seq RESTART WITH 1');
-      await db.query('ALTER SEQUENCE announcements_id_seq RESTART WITH 1');
-      await db.query('ALTER SEQUENCE notifications_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE users_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE books_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE borrow_records_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE reservations_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE waiting_list_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE announcements_id_seq RESTART WITH 1');
+      await client.query('ALTER SEQUENCE notifications_id_seq RESTART WITH 1');
     } catch (_) {}
 
     // 3. Seed Users (1 Admin, 3 Students)
@@ -40,7 +40,7 @@ async function seedShowcase() {
         ('Ananya Sharma', 'ananya.24054cps045@gioe.ac.in', '24054-CPS-045', $2, 'student', '+91-9848098765', 'Computer Science and Engineering', 'Diploma in Computer Science and Engineering', 'Semester V', 'LIB-STU-24054045', '2027-06-30', 3)
       RETURNING id, name, email, student_id, role;
     `;
-    const usersRes = await db.query(userInsert, [adminHash, studentHash]);
+    const usersRes = await client.query(userInsert, [adminHash, studentHash]);
     const adminUser = usersRes.rows[0];
     const tanishUser = usersRes.rows[1];
     const varunUser = usersRes.rows[2];
@@ -194,7 +194,7 @@ async function seedShowcase() {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         RETURNING id, isbn;
       `;
-      const res = await db.query(q, [
+      const res = await client.query(q, [
         b.isbn, b.title, b.author, b.genre, b.year, b.total_copies, b.available_copies,
         b.shelf_location, b.block, b.floor, b.section, b.rack, b.shelf, b.description, b.cover_url
       ]);
@@ -204,25 +204,25 @@ async function seedShowcase() {
 
     // 5. Seed Borrow Records (Active, Returned, and Overdue)
     // 5a. Mattawada Tanish — Active Loan (Clean Code)
-    await db.query(`
+    await client.query(`
       INSERT INTO borrow_records (user_id, book_id, borrow_date, due_date, status, fine_amount, notes)
       VALUES ($1, $2, CURRENT_DATE - INTERVAL '4 days', CURRENT_DATE + INTERVAL '10 days', 'borrowed', 0.00, 'Checked out via Desk Scan & Go')
     `, [tanishUser.id, bookIds['9780132350884']]);
 
     // 5b. Mattawada Tanish — Past History (Pragmatic Programmer - Returned)
-    await db.query(`
+    await client.query(`
       INSERT INTO borrow_records (user_id, book_id, borrow_date, due_date, return_date, status, fine_amount, notes)
       VALUES ($1, $2, CURRENT_DATE - INTERVAL '28 days', CURRENT_DATE - INTERVAL '14 days', CURRENT_DATE - INTERVAL '15 days', 'returned', 0.00, 'Returned on time in pristine condition')
     `, [tanishUser.id, bookIds['9780135957059']]);
 
     // 5c. Varun Kumar — Overdue Loan (Computer Networks - 6 Days Overdue for Fine Showcase!)
-    await db.query(`
+    await client.query(`
       INSERT INTO borrow_records (user_id, book_id, borrow_date, due_date, status, fine_amount, notes)
       VALUES ($1, $2, CURRENT_DATE - INTERVAL '20 days', CURRENT_DATE - INTERVAL '6 days', 'overdue', 6.00, 'Automated overdue fine applied ($1.00/day)')
     `, [varunUser.id, bookIds['9780132126953']]);
 
     // 5d. Ananya Sharma — Active Loan (Intro to Algorithms)
-    await db.query(`
+    await client.query(`
       INSERT INTO borrow_records (user_id, book_id, borrow_date, due_date, status, fine_amount, notes)
       VALUES ($1, $2, CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE + INTERVAL '12 days', 'borrowed', 0.00, 'Issued for Algorithm Design coursework')
     `, [ananyaUser.id, bookIds['9780262033848']]);
@@ -231,13 +231,13 @@ async function seedShowcase() {
 
     // 6. Seed Reservations for Mattawada Tanish
     // 6a. Approved Reservation Ready for Pickup
-    await db.query(`
+    await client.query(`
       INSERT INTO reservations (reservation_code, user_id, book_id, preferred_date, timeslot, status, approved_at, pickup_deadline, notes)
       VALUES ('RES-2026-9481', $1, $2, CURRENT_DATE + INTERVAL '1 day', '10:00 AM - 12:00 PM', 'approved', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '2 days', 'Librarian approved for morning pickup slot')
     `, [tanishUser.id, bookIds['9781118063330']]);
 
     // 6b. Pending Reservation awaiting librarian review
-    await db.query(`
+    await client.query(`
       INSERT INTO reservations (reservation_code, user_id, book_id, preferred_date, timeslot, status, notes)
       VALUES ('RES-2026-3104', $1, $2, CURRENT_DATE + INTERVAL '3 days', '02:00 PM - 04:00 PM', 'pending', 'Student requested afternoon collection')
     `, [tanishUser.id, bookIds['9780073523323']]);
@@ -245,13 +245,13 @@ async function seedShowcase() {
 
     // 7. Seed Smart Waiting List (For AI: A Modern Approach which is 0 copies)
     // Position 1: Mattawada Tanish
-    await db.query(`
+    await client.query(`
       INSERT INTO waiting_list (book_id, user_id, queue_position, status)
       VALUES ($1, $2, 1, 'waiting')
     `, [bookIds['9780136042594'], tanishUser.id]);
 
     // Position 2: Varun Kumar
-    await db.query(`
+    await client.query(`
       INSERT INTO waiting_list (book_id, user_id, queue_position, status)
       VALUES ($1, $2, 2, 'waiting')
     `, [bookIds['9780136042594'], varunUser.id]);
@@ -282,7 +282,7 @@ async function seedShowcase() {
     ];
 
     for (const a of announcements) {
-      await db.query(`
+      await client.query(`
         INSERT INTO announcements (title, content, category, created_by)
         VALUES ($1, $2, $3, $4)
       `, [a.title, a.content, a.category, adminUser.id]);
@@ -319,7 +319,7 @@ async function seedShowcase() {
     ];
 
     for (const n of notifs) {
-      await db.query(`
+      await client.query(`
         INSERT INTO notifications (user_id, title, message, type)
         VALUES ($1, $2, $3, $4)
       `, [tanishUser.id, n.title, n.message, n.type]);
@@ -339,8 +339,10 @@ async function seedShowcase() {
   } catch (err) {
     console.error('❌ Error seeding showcase data:', err);
   } finally {
-    process.exit(0);
+    if (require.main === module) process.exit(0);
   }
 }
 
 seedShowcase();
+
+module.exports = { seedShowcase };

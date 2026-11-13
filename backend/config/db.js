@@ -71,9 +71,15 @@ async function autoSeedIfEmpty(clientOrPool) {
           await clientOrPool.query(schemaSql);
         }
       }
-      const setupScript = require('../database/setup');
-      if (setupScript.seedWithClient) {
-        await setupScript.seedWithClient(clientOrPool);
+      try {
+        const { seedShowcase } = require('../scripts/seed_showcase');
+        await seedShowcase(clientOrPool);
+      } catch (seedErr) {
+        console.warn('Notice on showcase seed fallback:', seedErr.message);
+        const setupScript = require('../database/setup');
+        if (setupScript.seedWithClient) {
+          await setupScript.seedWithClient(clientOrPool);
+        }
       }
     }
   } catch (err) {

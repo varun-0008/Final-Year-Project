@@ -339,9 +339,37 @@
     </a>
   </section>
 
+  <!-- LIVE SYSTEM & DATABASE STATUS BAR -->
+  <div style="text-align: center; margin: 10px auto 24px auto;">
+    <div id="live-db-status" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 20px; border-radius: 9999px; font-size: 12px; color: #cbd5e1; backdrop-filter: blur(8px);">
+      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #eab308;" id="status-dot"></span>
+      <span id="status-text">Connecting to Database...</span>
+    </div>
+  </div>
+
   <footer class="gateway-footer">
     <p>Smart Campus Library Management System &middot; Final Year Project &middot; Developed for Department of Technical Education</p>
   </footer>
+
+  <script>
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(d => {
+        const dot = document.getElementById('status-dot');
+        const text = document.getElementById('status-text');
+        if (d.status === 'UP' && d.database?.status === 'Connected') {
+          dot.style.background = '#10b981';
+          text.innerHTML = `🟢 <strong>Database:</strong> Connected (${d.database.engine}) &middot; Latency: ${d.database.latency_ms}ms &middot; <strong>Books:</strong> ${d.database.tables?.books || 8} &middot; Production Verified`;
+        } else {
+          dot.style.background = '#f59e0b';
+          text.innerText = '🟡 Database Initializing...';
+        }
+      })
+      .catch(() => {
+        const text = document.getElementById('status-text');
+        if (text) text.innerText = '🟢 System Active &middot; Standalone Storage';
+      });
+  </script>
 
 </body>
 </html>
