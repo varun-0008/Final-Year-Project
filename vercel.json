@@ -4,7 +4,7 @@
     "api/index.js": {
       "memory": 1024,
       "maxDuration": 15,
-      "includeFiles": "backend/database/**,backend/scripts/**"
+      "includeFiles": "backend/database/**,backend/scripts/**,student-app-debug.apk,admin-web/**"
     }
   },
   "rewrites": [
@@ -50,7 +50,11 @@
     },
     {
       "source": "/download/apk",
-      "destination": "/api/index.js"
+      "destination": "/admin-web/student-app-debug.apk"
+    },
+    {
+      "source": "/student-app-debug.apk",
+      "destination": "/admin-web/student-app-debug.apk"
     },
     {
       "source": "/",
