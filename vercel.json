@@ -13,11 +13,35 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/portal",
+      "destination": "/admin-web/portal.html"
+    },
+    {
+      "source": "/home",
+      "destination": "/admin-web/portal.html"
+    },
+    {
+      "source": "/gateway",
+      "destination": "/admin-web/portal.html"
+    },
+    {
       "source": "/student",
       "destination": "/admin-web/student.html"
     },
     {
+      "source": "/student-portal",
+      "destination": "/admin-web/student.html"
+    },
+    {
       "source": "/admin",
+      "destination": "/admin-web/index.html"
+    },
+    {
+      "source": "/librarian",
+      "destination": "/admin-web/index.html"
+    },
+    {
+      "source": "/dashboard",
       "destination": "/admin-web/index.html"
     },
     {

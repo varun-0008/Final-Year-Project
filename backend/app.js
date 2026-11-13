@@ -185,21 +185,23 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Root Gateway — Institutional Portal Selector
-app.get('/', (req, res) => {
+// Root Gateway & Aliases
+app.get(['/', '/portal', '/home', '/gateway'], (req, res) => {
   res.sendFile(path.join(adminWebPath, 'portal.html'));
 });
 
-// Friendly aliases
-app.get('/student', (req, res) => {
+// Student Portal & Aliases
+app.get(['/student', '/student-portal'], (req, res) => {
   res.sendFile(path.join(adminWebPath, 'student.html'));
 });
 
-app.get('/admin', (req, res) => {
+// Admin / Librarian Desk & Aliases
+app.get(['/admin', '/librarian', '/dashboard'], (req, res) => {
   res.sendFile(path.join(adminWebPath, 'index.html'));
 });
 
-app.get('/login', (req, res) => {
+// Login & Aliases
+app.get(['/login', '/signin'], (req, res) => {
   res.sendFile(path.join(adminWebPath, 'login.html'));
 });
 
@@ -216,6 +218,11 @@ app.get('/download/apk', (req, res) => {
 // Global 404 handler for API routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API route not found' });
+});
+
+// Friendly fallback for any unrecognized web route -> redirect to Central Gateway
+app.get('*', (req, res) => {
+  res.redirect('/');
 });
 
 module.exports = app;
