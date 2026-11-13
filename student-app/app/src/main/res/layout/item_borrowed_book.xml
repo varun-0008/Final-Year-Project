@@ -4,11 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeColor="@color/gray_200"
-    app:strokeWidth="1dp">
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="3dp"
+    app:strokeColor="#E2E8F0"
+    app:strokeWidth="1dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,6 +17,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Top Header Status & Countdown -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -27,9 +29,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_badge_active"
-                android:text="BORROWED"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="ACTIVE LOAN"
                 android:textColor="@color/primary"
-                android:textSize="11sp"
+                android:textSize="10sp"
                 android:textStyle="bold" />
 
             <View
@@ -42,41 +46,47 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_badge_available"
-                android:text="Due in 11 days"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Due in 10 days"
                 android:textColor="@color/success"
-                android:textSize="11sp"
+                android:textSize="10sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- Book Title -->
         <TextView
             android:id="@+id/tvBorrowedTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Clean Code"
-            android:textColor="@color/gray_900"
-            android:textSize="17sp"
+            android:text="Operating System Concepts"
+            android:textColor="#0F172A"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- Book Author -->
         <TextView
             android:id="@+id/tvBorrowedAuthor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="By Robert C. Martin"
-            android:textColor="@color/gray_600"
-            android:textSize="13sp" />
+            android:text="By Abraham Silberschatz"
+            android:textColor="#64748B"
+            android:textSize="12sp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginVertical="10dp"
-            android:background="@color/gray_200" />
+            android:background="#E2E8F0" />
 
+        <!-- Loan Meta & Fine Details -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -88,39 +98,42 @@
                     android:id="@+id/tvBorrowDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Borrowed: Oct 3, 2026"
-                    android:textColor="@color/gray_600"
-                    android:textSize="12sp" />
+                    android:text="Issued: Nov 10, 2026"
+                    android:textColor="#64748B"
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/tvDueDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Due Date: Oct 17, 2026"
-                    android:textColor="@color/gray_900"
+                    android:text="Return By: Nov 24, 2026"
+                    android:textColor="#0F172A"
                     android:textSize="12sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvShelfInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Return to: Block A, Floor 1"
+                    android:textColor="#0284C7"
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/tvFineAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:background="@drawable/bg_badge_overdue"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="Fine: ₹0.00"
                 android:textColor="@color/danger"
-                android:textSize="13sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvShelfInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Return to Shelf: CS-A1"
-            android:textColor="@color/secondary"
-            android:textSize="11sp" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
