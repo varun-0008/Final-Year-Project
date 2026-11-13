@@ -43,13 +43,13 @@ interface ApiService {
 
     @POST("api/reservations")
     suspend fun createReservation(
-        @Body payload: Map<String, Any>
-    ): Response<Map<String, Any>>
+        @Body request: CreateReservationRequest
+    ): Response<CreateReservationResponse>
 
     @POST("api/waiting-list/join")
     suspend fun joinWaitingList(
-        @Body payload: Map<String, Any>
-    ): Response<Map<String, Any>>
+        @Body request: JoinWaitingListRequest
+    ): Response<CommonApiResponse>
 
     @GET("api/notifications/my")
     suspend fun getMyNotifications(): Response<NotificationsResponse>

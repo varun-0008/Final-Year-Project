@@ -1,8 +1,10 @@
 package com.library.studentapp.ui
 
+import android.app.DatePickerDialog
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -11,8 +13,11 @@ import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.library.studentapp.R
 import com.library.studentapp.data.ApiError
+import com.library.studentapp.data.CreateReservationRequest
+import com.library.studentapp.data.JoinWaitingListRequest
 import com.library.studentapp.data.RetrofitClient
 import com.library.studentapp.databinding.ActivityBookDetailBinding
+import com.library.studentapp.databinding.DialogReserveBookBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,47 +106,92 @@ class BookDetailActivity : AppCompatActivity() {
             return
         }
 
+        val dialogBinding = DialogReserveBookBinding.inflate(layoutInflater)
+        dialogBinding.tvDialogBookTitle.text = title
+        dialogBinding.tvDialogShelfCoords.text = "📍 $shelf"
+
         val cal = Calendar.getInstance()
         cal.add(Calendar.DAY_OF_YEAR, 1)
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        val preferredDate = sdf.format(cal.time)
-        val timeslot = "Morning (10:00 AM - 1:00 PM)"
+        var selectedDate = sdf.format(cal.time)
+        dialogBinding.etPickupDate.setText(selectedDate)
 
-        AlertDialog.Builder(this)
-            .setTitle("Confirm Book Reservation")
-            .setMessage("Would you like to reserve \"$title\"?\n\n• Target Collection Date: $preferredDate\n• Timeslot: $timeslot\n• Location: $shelf\n\nShow your Student PIN at the circulation desk to collect.")
-            .setPositiveButton("Confirm Reservation") { _, _ ->
-                executeReservation(bookId, preferredDate, timeslot)
+        dialogBinding.etPickupDate.setOnClickListener {
+            val datePicker = DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    cal.set(year, month, dayOfMonth)
+                    selectedDate = sdf.format(cal.time)
+                    dialogBinding.etPickupDate.setText(selectedDate)
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.datePicker.minDate = System.currentTimeMillis()
+            datePicker.show()
+        }
+
+        val timeslots = arrayOf(
+            "Morning Slot (10:00 AM - 12:00 PM)",
+            "Midday Slot (12:00 PM - 02:00 PM)",
+            "Afternoon Slot (02:00 PM - 04:00 PM)",
+            "Evening Slot (04:00 PM - 05:30 PM)"
+        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, timeslots)
+        dialogBinding.spnTimeslot.adapter = adapter
+        dialogBinding.spnTimeslot.setSelection(0)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnDialogCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnDialogConfirm.setOnClickListener {
+            val chosenDate = dialogBinding.etPickupDate.text?.toString()?.trim() ?: selectedDate
+            val chosenSlot = dialogBinding.spnTimeslot.selectedItem?.toString() ?: timeslots[0]
+            val notes = dialogBinding.etNotes.text?.toString()?.trim()
+
+            if (chosenDate.isEmpty()) {
+                Toast.makeText(this, "Please select a collection date", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+
+            dialog.dismiss()
+            executeReservation(bookId, chosenDate, chosenSlot, notes)
+        }
+
+        dialog.show()
     }
 
-    private fun executeReservation(bookId: Int, preferredDate: String, timeslot: String) {
+    private fun executeReservation(bookId: Int, preferredDate: String, timeslot: String, notes: String?) {
         binding.pbReserve.visibility = View.VISIBLE
         binding.btnReserveBook.isEnabled = false
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val apiService = RetrofitClient.getService(this@BookDetailActivity)
-                val payload = mapOf(
-                    "book_id" to bookId,
-                    "preferred_date" to preferredDate,
-                    "timeslot" to timeslot,
-                    "notes" to "Mobile Application Reservation"
+                val request = CreateReservationRequest(
+                    bookId = bookId,
+                    preferredDate = preferredDate,
+                    timeslot = timeslot,
+                    notes = if (!notes.isNullOrEmpty()) notes else "Mobile App Reservation"
                 )
-                val response = apiService.createReservation(payload)
+                val response = apiService.createReservation(request)
 
                 withContext(Dispatchers.Main) {
                     binding.pbReserve.visibility = View.GONE
                     if (response.isSuccessful && response.body() != null) {
                         val body = response.body()!!
-                        val resMap = body["reservation"] as? Map<*, *>
-                        val resCode = resMap?.get("reservation_code")?.toString() ?: "RES-ACTIVE"
+                        val res = body.reservation
+                        val resCode = res.reservationCode
 
                         binding.layoutReservationStatus.visibility = View.VISIBLE
                         binding.tvReservationCode.text = "Reservation Confirmed: $resCode"
-                        binding.tvReservationDetails.text = "Status: Pending Counter Collection on $preferredDate ($timeslot). Present your PIN at the desk."
+                        binding.tvReservationDetails.text = "Status: Ready for Collection on ${res.preferredDate} (${res.timeslot}). Present your PIN at the desk."
                         binding.btnReserveBook.isEnabled = false
                         binding.btnReserveBook.text = "Reservation Active ($resCode)"
 
@@ -179,11 +229,11 @@ class BookDetailActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val apiService = RetrofitClient.getService(this@BookDetailActivity)
-                val payload = mapOf(
-                    "book_id" to bookId,
-                    "notes" to "Queued via Mobile App"
+                val request = JoinWaitingListRequest(
+                    bookId = bookId,
+                    notes = "Queued via Mobile App"
                 )
-                val response = apiService.joinWaitingList(payload)
+                val response = apiService.joinWaitingList(request)
 
                 withContext(Dispatchers.Main) {
                     binding.pbReserve.visibility = View.GONE

@@ -154,6 +154,28 @@ data class BorrowedResponse(
     val borrowedBooks: List<BorrowRecord>
 )
 
+data class CreateReservationRequest(
+    @SerializedName("book_id") val bookId: Int,
+    @SerializedName("preferred_date") val preferredDate: String,
+    val timeslot: String,
+    val notes: String? = null
+)
+
+data class CreateReservationResponse(
+    val message: String,
+    val reservation: Reservation
+)
+
+data class JoinWaitingListRequest(
+    @SerializedName("book_id") val bookId: Int,
+    val notes: String? = null
+)
+
+data class CommonApiResponse(
+    val message: String? = null,
+    val error: String? = null
+)
+
 data class ApiError(
     val error: String?
 )
