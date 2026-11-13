@@ -56,30 +56,26 @@ let initPromise = null;
 
 async function autoSeedIfEmpty(clientOrPool) {
   try {
-    const checkTable = await clientOrPool.query(
-      "SELECT 1 FROM information_schema.tables WHERE table_name = 'users'"
-    );
-    const rowCount = checkTable.rowCount ?? (checkTable.rows ? checkTable.rows.length : 0);
-    if (rowCount === 0) {
-      console.log('🌱 Applying schema and seeding showcase data...');
-      const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql');
-      if (fs.existsSync(schemaPath)) {
-        const schemaSql = fs.readFileSync(schemaPath, 'utf8');
-        if (typeof clientOrPool.exec === 'function') {
-          await clientOrPool.exec(schemaSql);
-        } else {
-          await clientOrPool.query(schemaSql);
-        }
+    let shouldSeed = false;
+    try {
+      const checkBooks = await clientOrPool.query("SELECT COUNT(*) as count FROM books");
+      const bookCount = parseInt(checkBooks.rows[0].count, 10);
+      const checkUsers = await clientOrPool.query("SELECT COUNT(*) as count FROM users");
+      const userCount = parseInt(checkUsers.rows[0].count, 10);
+      if (bookCount < 5 || userCount < 2) {
+        shouldSeed = true;
       }
+    } catch (_) {
+      shouldSeed = true;
+    }
+
+    if (shouldSeed) {
+      console.log('🌱 Applying schema and seeding showcase data...');
       try {
         const { seedShowcase } = require('../scripts/seed_showcase');
         await seedShowcase(clientOrPool);
       } catch (seedErr) {
         console.warn('Notice on showcase seed fallback:', seedErr.message);
-        const setupScript = require('../database/setup');
-        if (setupScript.seedWithClient) {
-          await setupScript.seedWithClient(clientOrPool);
-        }
       }
     }
   } catch (err) {

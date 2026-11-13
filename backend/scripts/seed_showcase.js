@@ -1,23 +1,42 @@
 // Smart Campus Library — Production Showcase Data Seeder
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 async function seedShowcase(customClient = null) {
   const client = customClient || require('../config/db');
   console.log('🌱 Seeding complete production-grade showcase data...');
 
   try {
+    // 0. Ensure schema and tables exist first
+    try {
+      const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql');
+      if (fs.existsSync(schemaPath)) {
+        const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+        if (typeof client.exec === 'function') {
+          await client.exec(schemaSql);
+        } else {
+          await client.query(schemaSql);
+        }
+      }
+    } catch (e) {
+      console.warn('Notice applying schema.sql:', e.message);
+    }
+
     // 1. Password Hashes
     const adminHash = bcrypt.hashSync('admin123', 10);
     const studentHash = bcrypt.hashSync('student123', 10);
 
     // 2. Clear Existing Data (Clean reset for showcase)
-    await client.query('DELETE FROM notifications');
-    await client.query('DELETE FROM waiting_list');
-    await client.query('DELETE FROM reservations');
-    await client.query('DELETE FROM borrow_records');
-    await client.query('DELETE FROM announcements');
-    await client.query('DELETE FROM books');
-    await client.query('DELETE FROM users');
+    try {
+      await client.query('DELETE FROM notifications');
+      await client.query('DELETE FROM waiting_list');
+      await client.query('DELETE FROM reservations');
+      await client.query('DELETE FROM borrow_records');
+      await client.query('DELETE FROM announcements');
+      await client.query('DELETE FROM books');
+      await client.query('DELETE FROM users');
+    } catch (_) {}
 
     // Reset sequences if supported
     try {

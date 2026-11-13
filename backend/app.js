@@ -101,6 +101,26 @@ app.use('/api/waiting-list', waitingListRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Emergency / Automatic Showcase Seeder Trigger
+app.get('/api/seed-db', async (req, res) => {
+  try {
+    const { seedShowcase } = require('./scripts/seed_showcase');
+    await seedShowcase(db);
+    const [b, u] = await Promise.all([
+      db.query('SELECT COUNT(*) FROM books'),
+      db.query('SELECT COUNT(*) FROM users')
+    ]);
+    res.json({
+      status: 'SUCCESS',
+      message: 'Showcase database seeded successfully with all demo books and students!',
+      books: parseInt(b.rows[0].count, 10),
+      users: parseInt(u.rows[0].count, 10)
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Production Comprehensive Health & Database Diagnostic Endpoint
 app.get('/api/health', async (req, res) => {
   const startTime = Date.now();
